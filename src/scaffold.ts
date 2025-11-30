@@ -407,14 +407,28 @@ export class ScaffoldGenerator {
     steps.push(pipelineStep);
 
     // 7. 上传产物（如果需要）
-    if (config.setup?.steps?.some((s: any) => s.name?.includes('artifact'))) {
+    // 检查条件：
+    // 1. setup.steps 中包含 'artifact' 关键字
+    // 2. Pipeline 名称包含 'build'（构建类 Pipeline 通常需要上传产物）
+    // 3. 或者 Pipeline 设置了 artifact-path 输出
+    const hasArtifactStep = config.setup?.steps?.some((s: any) => s.name?.includes('artifact'));
+    const isBuildPipeline = metadata.name.toLowerCase().includes('build');
+    const hasArtifactOutput = config.inputs && Object.keys(config.inputs).some(key => 
+      key.toLowerCase().includes('artifact') || key.toLowerCase().includes('output')
+    );
+    
+    if (hasArtifactStep || isBuildPipeline || hasArtifactOutput) {
+      // 确定产物路径和名称
+      const artifactName = metadata.name.toLowerCase().replace('pipeline', '').replace(/\s+/g, '-') + '-artifacts';
+      const artifactPath = 'artifacts/**';
+      
       steps.push({
         name: 'Upload artifacts',
         uses: 'actions/upload-artifact@v3',
         if: 'success()',
         with: {
-          name: `${metadata.name.toLowerCase()}-artifacts`,
-          path: 'artifacts/**',
+          name: artifactName,
+          path: artifactPath,
           'retention-days': 30,
         },
       });
