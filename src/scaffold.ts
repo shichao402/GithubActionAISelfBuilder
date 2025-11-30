@@ -173,8 +173,8 @@ export class ScaffoldGenerator {
     }
 
     // 如果 Registry 中没有，回退到文件系统查找（向后兼容）
-    const includeProjectOnly = this.shouldIncludeProjectOnly();
-    const pipelineFiles = this.findPipelineFiles(includeProjectOnly);
+    const includeTestPipelines = this.shouldIncludeTestPipelines();
+    const pipelineFiles = this.findPipelineFiles(includeTestPipelines);
 
     for (const file of pipelineFiles) {
       try {
@@ -220,16 +220,16 @@ export class ScaffoldGenerator {
   }
 
   /**
-   * 判断是否应该包含 ProjectOnly 目录
-   * 从配置文件读取 pipelines.include_project_only 配置
+   * 判断是否应该包含 test 目录
+   * 从配置文件读取 pipelines.include_test_pipelines 配置
    */
-  private shouldIncludeProjectOnly(): boolean {
+  private shouldIncludeTestPipelines(): boolean {
     // 从配置读取
-    if (this.config?.pipelines?.include_project_only !== undefined) {
-      return this.config.pipelines.include_project_only === true;
+    if (this.config?.pipelines?.include_test_pipelines !== undefined) {
+      return this.config.pipelines.include_test_pipelines === true;
     }
     
-    // 默认：如果在本项目目录中，包含 ProjectOnly
+    // 默认：如果在本项目目录中，包含 test 目录
     const isInProjectRoot = this.projectRoot === process.cwd() || 
                             this.projectRoot.includes('GithubActionAISelfBuilder');
     return isInProjectRoot;
@@ -237,9 +237,9 @@ export class ScaffoldGenerator {
 
   /**
    * 查找 Pipeline 文件（递归查找所有子目录）
-   * @param includeProjectOnly 是否包含 ProjectOnly 目录（仅用于本项目）
+   * @param includeTestPipelines 是否包含 test 目录（仅用于本项目）
    */
-  private findPipelineFiles(includeProjectOnly: boolean = false): string[] {
+  private findPipelineFiles(includeTestPipelines: boolean = false): string[] {
     const files: string[] = [];
     const pipelinesPath = this.pipelinesDir;
 
@@ -252,8 +252,8 @@ export class ScaffoldGenerator {
       for (const entry of entries) {
         const fullPath = path.join(dir, entry.name);
         if (entry.isDirectory()) {
-          // 跳过 ProjectOnly 目录（除非明确指定包含）
-          if (entry.name === 'ProjectOnly' && !includeProjectOnly) {
+          // 跳过 test 目录（除非明确指定包含）
+          if (entry.name === 'test' && !includeTestPipelines) {
             continue;
           }
           // 递归查找子目录
@@ -336,8 +336,8 @@ export class ScaffoldGenerator {
       modulePath = registryMetadata.modulePath;
     } else {
       // 如果 Registry 中没有，从文件路径推断
-      const includeProjectOnly = this.shouldIncludeProjectOnly();
-      const pipelineFiles = this.findPipelineFiles(includeProjectOnly);
+      const includeTestPipelines = this.shouldIncludeTestPipelines();
+      const pipelineFiles = this.findPipelineFiles(includeTestPipelines);
       modulePath = className.toLowerCase().replace('pipeline', '');
       
       // 尝试从文件路径找到匹配的文件

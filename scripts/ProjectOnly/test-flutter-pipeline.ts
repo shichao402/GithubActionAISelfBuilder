@@ -9,7 +9,7 @@
  * 注意：此脚本仅用于测试本项目，不作为子项目提供
  */
 
-import { FlutterBuildPipeline } from '../../src/pipelines/ProjectOnly/flutter-build-pipeline';
+import { FlutterBuildPipeline } from '../../src/pipelines/test/flutter-build-pipeline';
 import * as path from 'path';
 
 async function main() {

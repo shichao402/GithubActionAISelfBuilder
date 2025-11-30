@@ -4,7 +4,7 @@
  * 测试重点：版本号递增的业务逻辑，而非实现细节
  */
 
-import { VersionBumpPipeline } from '../pipelines/ProjectOnly/version-bump-pipeline';
+import { VersionBumpPipeline } from '../pipelines/test/version-bump-pipeline';
 
 // Mock @actions/core
 jest.mock('@actions/core', () => {

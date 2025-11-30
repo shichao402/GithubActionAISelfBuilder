@@ -11,7 +11,7 @@ src/pipelines/
 │   └── release-base-pipeline.ts    # 通用发布 Pipeline 基类
 ├── build/                   # 构建相关 Pipeline（共享）
 │   └── flutter-build-pipeline.ts  # Flutter 构建 Pipeline（供父项目使用）
-└── ProjectOnly/             # 本项目测试用 Pipeline（不共享给父项目）
+└── test/                    # 本项目测试用 Pipeline（不共享给父项目）
     ├── flutter-build-pipeline.ts  # Flutter 构建 Pipeline（测试本项目 flutter-demo）
     ├── release-pipeline.ts        # 发布 Pipeline（测试本项目）
     └── version-bump-pipeline.ts   # 版本号递增 Pipeline（测试本项目）
@@ -41,22 +41,22 @@ src/pipelines/
 
 - **构建类** (`build/`): 继承 `BuildPipeline`
 
-### 3. 测试用 Pipeline（ProjectOnly/）
+### 3. 测试用 Pipeline（test/）
 
-**重要**: `ProjectOnly/` 目录下的 Pipeline 仅用于测试本项目，不会共享给父项目。
+**重要**: `test/` 目录下的 Pipeline 仅用于测试本项目，不会共享给父项目。
 
 - **`FlutterBuildPipeline`**: 用于测试本项目的 `flutter-demo` 样例工程
-  - 位置: `src/pipelines/ProjectOnly/flutter-build-pipeline.ts`
+  - 位置: `src/pipelines/test/flutter-build-pipeline.ts`
   - 用途: 测试 Flutter 构建功能
   - 使用: `npm run test:flutter`
 
 - **`ReleasePipeline`**: 用于测试本项目的发布功能
-  - 位置: `src/pipelines/ProjectOnly/release-pipeline.ts`
+  - 位置: `src/pipelines/test/release-pipeline.ts`
   - 用途: 测试 GitHub Release 创建功能
   - 使用: 通过 `.github/workflows/release.yml` 触发
 
 - **`VersionBumpPipeline`**: 用于测试本项目的版本号递增功能
-  - 位置: `src/pipelines/ProjectOnly/version-bump-pipeline.ts`
+  - 位置: `src/pipelines/test/version-bump-pipeline.ts`
   - 用途: 测试版本号递增功能
   - 使用: 通过 `.github/workflows/version-bump.yml` 触发
 

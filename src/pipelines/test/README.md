@@ -1,4 +1,4 @@
-# ProjectOnly Pipelines
+# Test Pipelines
 
 本目录包含仅用于测试本项目的 Pipeline，**不会共享给父项目**。
 
@@ -29,7 +29,7 @@ npm run test:flutter
 
 **与共享版本的区别**:
 - 共享版本 (`src/pipelines/build/flutter-build-pipeline.ts`): 供父项目使用，可配置项目路径
-- 测试版本 (`src/pipelines/ProjectOnly/flutter-build-pipeline.ts`): 仅用于测试本项目
+- 测试版本 (`src/pipelines/test/flutter-build-pipeline.ts`): 仅用于测试本项目
 
 ### ReleasePipeline
 
@@ -67,12 +67,13 @@ npm run test:flutter
 
 ## 脚手架工具行为
 
-脚手架工具在扫描 Pipeline 时会**自动排除** `ProjectOnly/` 目录：
+脚手架工具在扫描 Pipeline 时会**自动排除** `test/` 目录（除非配置了 `include_test_pipelines: true`）：
 
 ```typescript
-// 脚手架工具会跳过 ProjectOnly 目录
-const pipelineFiles = findPipelineFiles(scriptsDir)
-  .filter(file => !file.includes('ProjectOnly'));
+// 脚手架工具会跳过 test 目录（除非明确包含）
+if (entry.name === 'test' && !includeTestPipelines) {
+  continue;
+}
 ```
 
 因此，父项目使用脚手架工具时，不会看到这些测试用的 Pipeline。
