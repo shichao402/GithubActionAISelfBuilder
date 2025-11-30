@@ -1,0 +1,35 @@
+name: 'Debug Action'
+description: 'AI 自我调试 GitHub Actions workflow'
+author: 'GitHub Action Builder'
+
+inputs:
+  run-id:
+    description: 'GitHub Actions run ID（可选，从文件读取）'
+    required: false
+  workflow-file:
+    description: 'Workflow 文件路径（用于触发）'
+    required: false
+  ref:
+    description: 'Git 引用（分支、标签或提交 SHA）'
+    required: false
+  action:
+    description: '操作类型：trigger, monitor, collect-logs, run'
+    required: false
+    default: 'monitor'
+  poll-interval:
+    description: '监控查询间隔（秒）'
+    required: false
+    default: '5'
+
+outputs:
+  run-id:
+    description: 'Workflow run ID'
+  log-file:
+    description: '错误日志文件路径'
+  success:
+    description: '是否成功'
+
+runs:
+  using: 'node20'
+  main: 'dist/index.js'
+

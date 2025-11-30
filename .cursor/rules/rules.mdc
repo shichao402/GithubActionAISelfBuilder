@@ -1,11 +1,6 @@
 ---
-description: 为 GitHub Action AI Self Builder 项目提供开发规范和最佳实践指导
-globs: ["**/*.py", "**/*.md", "**/*.yml", "**/*.yaml", "**/*.json"]
-tags: ["GitHub Action", "Python", "脚手架", "CI/CD"]
-priority: 1
-version: 1.0.0
+alwaysApply: true
 ---
-
 # GitHub Action AI Self Builder - 核心 MCP 规则
 
 ## 项目概述
@@ -14,11 +9,14 @@ version: 1.0.0
 
 ## 技术栈和约束
 
-- **语言**: Python 3.7+
-- **环境管理**: 必须使用 venv 虚拟环境
+- **语言**: TypeScript 5.3+
+- **运行时**: Node.js 18.0+
+- **包管理**: npm (支持 workspaces)
 - **平台支持**: Windows, macOS, Linux（必须提供跨平台支持）
-- **依赖管理**: 使用 requirements.txt
-- **代码风格**: 遵循 PEP 8 Python 编码规范
+- **依赖管理**: 使用 package.json 和 package-lock.json
+- **代码风格**: 遵循 TypeScript/ESLint 编码规范
+- **测试框架**: Jest
+- **构建工具**: TypeScript Compiler (tsc)
 
 ## 核心架构原则
 
@@ -28,34 +26,46 @@ version: 1.0.0
 - 每个派生类对应生成一个独立的 GitHub Action 工作流
 - 基类应提供标准化的接口和通用功能
 - 派生类必须实现 `execute()` 方法来完成具体功能
+- 使用静态方法定义工作流配置（`getWorkflowInputs()`, `getWorkflowSetup()` 等）
 
 ### 2. 脚手架生成器
 
 - 脚手架工具必须能够根据脚本派生类自动生成对应的 GitHub Action YAML 文件
 - 生成的 YAML 文件应符合 GitHub Actions 最佳实践
 - 支持通过命令行参数指定输出路径和配置
+- 优先使用 `PipelineRegistry` 查找 Pipeline 类，提高可测试性
 
-### 3. 配置文件系统
+### 3. 模块化架构
+
+- **类型统一**: 所有工作流相关类型定义在 `src/types/workflow-types.ts`
+- **配置构建器**: 使用 `WorkflowConfig` 类及其子构建器（`SetupBuilder`, `TriggerBuilder`）构建配置
+- **Pipeline 注册表**: 使用 `PipelineRegistry` 管理 Pipeline 类的注册和查找
+- **职责分离**: 每个模块职责单一，遵循单一职责原则
+
+### 4. 配置文件系统
 
 - 配置文件支持 JSON 或 YAML 格式
 - 配置文件应支持扩展和定制流水线行为
 - 配置文件应放在 `config/` 目录下
+- 主配置文件：`config.yaml`
 
-### 4. 跨平台支持
+### 5. 跨平台支持
 
 - 所有脚本和工具必须支持 Windows、macOS、Linux 三个平台
-- 提供对应的安装脚本：install.sh (Linux/macOS), install.bat (Windows), install.ps1 (Windows PowerShell)
-- 环境激活命令需要考虑不同平台的差异
+- 提供对应的脚本：TypeScript（跨平台）、PowerShell（Windows）、Shell（Linux/Mac）
+- 使用 Node.js 标准库处理路径和文件系统，确保跨平台兼容
 
 ## AI 协助开发规则
 
 ### 当用户请求创建新的流水线脚本时：
 
 1. **检查基类**: 首先确认 `BasePipeline` 基类存在且接口清晰
-2. **创建派生类**: 在 `src/pipelines/` 目录下创建新的 Python 文件
+2. **创建派生类**: 在 `src/pipelines/` 目录下创建新的 TypeScript 文件（`.ts`）
 3. **实现接口**: 确保实现 `execute()` 方法和其他必要的抽象方法
-4. **添加配置**: 如果需要，在 `config/` 目录下创建对应的配置文件
-5. **文档说明**: 为新流水线添加清晰的文档字符串和注释
+4. **定义配置**: 使用静态方法定义工作流配置（`getWorkflowInputs()`, `getWorkflowSetup()` 等）
+5. **注册到 Registry**: 可选，可以注册到 `PipelineRegistry` 以便查找
+6. **添加配置**: 如果需要，在 `config/` 目录下创建对应的配置文件
+7. **文档说明**: 为新流水线添加清晰的 JSDoc 注释
 
 ### 当用户请求生成 GitHub Action 工作流时：
 
@@ -78,57 +88,98 @@ version: 1.0.0
 ```
 GithubActionAISelfBuilder/
 ├── README.md                 # 项目文档（必须保持更新）
-├── requirements.txt          # Python 依赖（必须保持更新）
+├── package.json              # Node.js 依赖和脚本（必须保持更新）
+├── tsconfig.json             # TypeScript 配置
+├── jest.config.js            # Jest 测试配置
 ├── .cursor/
 │   └── rules/
 │       └── rules.mdc         # AI 规则文件（本文件）
 ├── .github/
 │   └── workflows/           # 生成的 GitHub Action 工作流
-├── scripts/                 # 跨平台安装脚本
-│   ├── install.sh           # Linux/macOS
-│   ├── install.bat          # Windows CMD
-│   └── install.ps1          # Windows PowerShell
+├── actions/                  # 可复用的 GitHub Actions
+│   ├── build-action/        # 构建 Action
+│   ├── release-action/      # 发布 Action
+│   ├── debug-action/        # 调试 Action
+│   └── common/              # 通用 Actions
+├── scripts/                 # 工具脚本
+│   ├── push-git.ts          # Git 推送脚本（TypeScript）
+│   ├── push-git.ps1         # Git 推送脚本（PowerShell）
+│   ├── push-git.sh          # Git 推送脚本（Shell）
+│   └── test-flutter-pipeline.ts
 ├── src/
-│   ├── base_pipeline.py     # 流水线基类（核心）
-│   ├── scaffold.py          # 脚手架生成器（核心）
-│   └── pipelines/           # 流水线脚本派生类
-│       └── __init__.py
-└── config/                  # 配置文件目录
+│   ├── base-pipeline.ts     # 流水线基类（核心）
+│   ├── scaffold.ts          # 脚手架生成器（核心）
+│   ├── workflow-config.ts   # 工作流配置构建器
+│   ├── workflow-manager.ts  # 工作流管理器
+│   ├── pipeline-registry.ts # Pipeline 注册表
+│   ├── types/               # 类型定义
+│   │   ├── workflow-types.ts
+│   │   └── index.ts
+│   ├── workflow-config/     # 配置构建器子模块
+│   │   ├── setup-builder.ts
+│   │   └── trigger-builder.ts
+│   ├── pipelines/           # 流水线脚本派生类
+│   │   ├── flutter-build-pipeline.ts
+│   │   └── version-bump-pipeline.ts
+│   └── __tests__/           # 单元测试
+├── config/                  # 配置文件目录
+│   ├── config.yaml
+│   └── config.example.yaml
+├── docs/                    # 文档目录
+└── dist/                    # 编译输出目录
 ```
 
 ### 文件命名规范
 
-- Python 文件使用小写字母和下划线：`base_pipeline.py`
+- TypeScript 文件使用小写字母和连字符：`base-pipeline.ts`
 - 类名使用大驼峰命名：`BasePipeline`, `BuildPipeline`
-- 配置文件使用小写字母和连字符：`build-config.json`
+- 接口和类型使用大驼峰命名：`PipelineResult`, `WorkflowConfig`
+- 配置文件使用小写字母和连字符：`config.yaml`
+- 测试文件使用 `*.test.ts` 后缀
 
 ### 代码风格
 
-- 使用 4 个空格缩进（不使用 Tab）
-- 行长度限制在 88 字符（Black 标准）
-- 函数和类必须有文档字符串
-- 使用类型提示（Type Hints）
+- 使用 2 个空格缩进（不使用 Tab）
+- 行长度限制在 100 字符（Prettier 标准）
+- 函数和类必须有 JSDoc 注释
+- 使用 TypeScript 类型注解（Type Annotations）
+- 遵循 ESLint 规则
+- 使用 Prettier 格式化代码
 
 ## 开发工作流
 
 ### 标准开发流程
 
-1. **环境准备**: 确保 venv 环境已激活
-2. **编写脚本**: 创建或修改流水线脚本派生类
-3. **测试验证**: 在本地测试脚本功能
-4. **生成工作流**: 使用脚手架工具生成 GitHub Action YAML
-5. **验证工作流**: 检查生成的 YAML 语法和逻辑
-6. **更新文档**: 更新 README.md 和相关文档
+1. **环境准备**: 确保 Node.js 18+ 已安装，运行 `npm install` 安装依赖
+2. **编写脚本**: 创建或修改流水线脚本派生类（TypeScript）
+3. **类型检查**: 运行 `npm run build` 检查类型错误
+4. **测试验证**: 运行 `npm test` 执行单元测试
+5. **生成工作流**: 使用脚手架工具生成 GitHub Action YAML
+6. **验证工作流**: 检查生成的 YAML 语法和逻辑
+7. **更新文档**: 更新 README.md 和相关文档
+8. **推送代码**: **必须使用一键推送脚本** (`npm run push` 或对应平台的脚本)
+
+### Git 推送规范
+
+**重要规则**: AI 助手在推送代码到远程仓库时，**必须且只能**使用项目提供的一键推送脚本，禁止直接使用 `git push` 命令。
+
+**快速参考**:
+- 推荐方式: `npm run push [提交信息]`
+- 其他方式: `ts-node scripts/push-git.ts [提交信息]` 或对应平台的脚本
+
+> **详细规范**: 请参考 `.cursor/rules/git-push-rule.mdc`（项目特定规则，不提交到仓库）
 
 ### 创建新流水线的步骤
 
-1. 在 `src/pipelines/` 创建新的 Python 文件
-2. 导入 `BasePipeline` 基类
-3. 创建派生类并实现必要方法
-4. 在 `src/pipelines/__init__.py` 中导出新类
-5. 创建对应的配置文件（如需要）
-6. 使用脚手架工具生成工作流
-7. 更新文档
+1. 在 `src/pipelines/` 创建新的 TypeScript 文件（如 `my-pipeline.ts`）
+2. 导入 `BasePipeline` 基类和类型
+3. 创建派生类并实现 `execute()` 方法
+4. 实现静态方法定义工作流配置（`getWorkflowInputs()`, `getWorkflowSetup()` 等）
+5. 可选：注册到 `PipelineRegistry` 以便查找
+6. 创建对应的配置文件（如需要）
+7. 使用脚手架工具生成工作流：`npm run scaffold -- --pipeline MyPipeline --output .github/workflows/my-pipeline.yml`
+8. 编写单元测试
+9. 更新文档
 
 ## 最佳实践
 
@@ -149,17 +200,21 @@ GithubActionAISelfBuilder/
 
 ### 跨平台兼容性
 
-- **路径处理**: 使用 `pathlib` 或 `os.path` 处理路径，避免硬编码
+- **路径处理**: 使用 Node.js `path` 模块处理路径，避免硬编码
 - **命令执行**: 使用跨平台的命令和工具
 - **脚本测试**: 在多个平台上测试脚本功能
+- **文件系统**: 使用 Node.js `fs` 模块，注意异步操作
 
 ## 注意事项
 
-1. **虚拟环境**: 始终在 venv 环境中开发和运行代码
-2. **依赖管理**: 添加新依赖时及时更新 requirements.txt
-3. **版本兼容**: 确保代码兼容 Python 3.7+
-4. **文档同步**: 代码变更时同步更新文档
-5. **测试覆盖**: 尽可能为新功能添加测试
+1. **Node.js 版本**: 确保使用 Node.js 18.0+ 版本
+2. **依赖管理**: 添加新依赖时及时更新 package.json，运行 `npm install`
+3. **类型安全**: 充分利用 TypeScript 类型系统，避免使用 `any`
+4. **版本兼容**: 确保代码兼容 Node.js 18+
+5. **文档同步**: 代码变更时同步更新文档
+6. **测试覆盖**: 尽可能为新功能添加测试，使用 Jest 框架
+7. **构建检查**: 推送前运行 `npm run build` 确保编译通过
+8. **模块化**: 遵循项目的模块化架构，使用统一的类型定义
 
 ## AI 助手行为指南
 
@@ -172,42 +227,104 @@ GithubActionAISelfBuilder/
 5. **检查完整性**: 确保生成的代码完整且可执行
 6. **跨平台考虑**: 始终考虑跨平台兼容性
 7. **文档更新**: 提醒用户更新相关文档
+8. **Git 推送规范**: **必须使用项目提供的一键推送脚本**，禁止直接使用 `git push` 命令
+   - 使用 `npm run push [提交信息]` 或对应平台的脚本
+   - 详细规范请参考 `.cursor/rules/git-push-rule.mdc`（项目特定规则）
 
 ## 常见任务模板
 
 ### 创建新的流水线脚本模板
 
-```python
-from src.base_pipeline import BasePipeline
+```typescript
+import { BasePipeline, PipelineResult } from '../base-pipeline';
+import { createWorkflowConfig } from '../workflow-config';
 
-class YourPipeline(BasePipeline):
-    """
-    流水线描述
-    """
-    
-    def __init__(self, config=None):
-        super().__init__(config)
-        # 初始化配置
-    
-    def execute(self):
-        """
-        执行流水线逻辑
-        """
-        # 实现具体功能
-        pass
-    
-    def validate(self):
-        """
-        验证配置和前置条件
-        """
-        # 实现验证逻辑
-        return True
+/**
+ * 你的流水线描述
+ */
+export class YourPipeline extends BasePipeline {
+  /**
+   * 定义工作流输入参数
+   */
+  static getWorkflowInputs() {
+    const config = createWorkflowConfig();
+    config.addInput('input-name', '输入参数描述', false, 'default-value');
+    return config.toDict().inputs || {};
+  }
+
+  /**
+   * 定义准备阶段配置
+   */
+  static getWorkflowSetup() {
+    const config = createWorkflowConfig();
+    config.setupNode('18', 'npm');
+    return config.toDict().setup || {};
+  }
+
+  /**
+   * 定义触发条件
+   */
+  static getWorkflowTriggers() {
+    const config = createWorkflowConfig();
+    config.onPush(['main', 'develop']);
+    config.onPullRequest(['main']);
+    return config.toDict().triggers || {};
+  }
+
+  /**
+   * 定义运行环境
+   */
+  static getWorkflowRunsOn(): string {
+    return 'ubuntu-latest';
+  }
+
+  /**
+   * 验证输入和前置条件
+   */
+  protected validate(): boolean {
+    // 实现验证逻辑
+    return true;
+  }
+
+  /**
+   * 执行流水线逻辑
+   */
+  async execute(): Promise<PipelineResult> {
+    try {
+      // 实现具体功能
+      this.log('info', '开始执行流水线...');
+      
+      // 执行操作
+      const success = await this.runCommand('your-command');
+      
+      if (!success) {
+        return {
+          success: false,
+          message: '执行失败',
+          exitCode: 1,
+        };
+      }
+
+      return {
+        success: true,
+        message: '执行成功',
+        exitCode: 0,
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        message: `执行过程中发生错误: ${error.message}`,
+        exitCode: 1,
+      };
+    }
+  }
+}
 ```
 
 ### 生成 GitHub Action 工作流命令
 
 ```bash
-python src/scaffold.py --pipeline YourPipeline --output .github/workflows/your-pipeline.yml
+npm run scaffold -- --pipeline YourPipeline --output .github/workflows/your-pipeline.yml
 ```
 
 ## 使用流程详解
@@ -238,7 +355,12 @@ python src/scaffold.py --pipeline YourPipeline --output .github/workflows/your-p
 
 **命令格式**:
 ```bash
-python src/scaffold.py --pipeline <PipelineClass> --output .github/workflows/<workflow-name>.yml
+npm run scaffold -- --pipeline <PipelineClass> --output .github/workflows/<workflow-name>.yml
+```
+
+或直接使用 ts-node:
+```bash
+ts-node src/scaffold.ts --pipeline <PipelineClass> --output .github/workflows/<workflow-name>.yml
 ```
 
 **生成内容**:
@@ -260,57 +382,57 @@ python src/scaffold.py --pipeline <PipelineClass> --output .github/workflows/<wo
 
 ## 环境配置说明
 
-### 虚拟环境管理
+### Node.js 环境管理
 
-**创建虚拟环境**:
-```bash
-# Windows
-python -m venv venv
-
-# macOS/Linux
-python3 -m venv venv
-```
-
-**激活虚拟环境**:
-```bash
-# Windows PowerShell
-.\venv\Scripts\Activate.ps1
-
-# Windows CMD
-.\venv\Scripts\activate.bat
-
-# macOS/Linux
-source venv/bin/activate
-```
+**安装 Node.js**:
+- 确保安装 Node.js 18.0 或更高版本
+- 推荐使用 nvm (Node Version Manager) 管理多个 Node.js 版本
 
 **安装依赖**:
 ```bash
-pip install -r requirements.txt
+npm install
+```
+
+**运行脚本**:
+```bash
+# 构建项目
+npm run build
+
+# 运行测试
+npm test
+
+# 运行脚手架工具
+npm run scaffold -- --pipeline <PipelineClass> --output <output-path>
+
+# 格式化代码
+npm run format
+
+# 代码检查
+npm run lint
 ```
 
 ### 跨平台脚本说明
 
-- `install.sh`: Linux/macOS 安装脚本，使用 bash
-- `install.bat`: Windows CMD 批处理脚本
-- `install.ps1`: Windows PowerShell 脚本
+- `push-git.ts`: TypeScript 脚本，跨平台（推荐）
+- `push-git.ps1`: PowerShell 脚本，Windows
+- `push-git.sh`: Shell 脚本，Linux/Mac
 
-所有安装脚本应执行相同的操作：
-1. 检查 Python 版本
-2. 创建虚拟环境
-3. 安装依赖
-4. 验证安装
+所有推送脚本应执行相同的操作：
+1. 检查是否有未提交的更改
+2. 显示当前 Git 状态
+3. 自动添加所有更改
+4. 提交更改（使用提供的或默认的提交信息）
+5. 推送到远程仓库
 
 ## 脚手架工具使用规范
 
 ### 命令行参数
 
-脚手架工具 `scaffold.py` 应支持以下参数：
+脚手架工具 `scaffold.ts` 应支持以下参数：
 
 - `--pipeline`: 指定流水线类名（必需）
-- `--output`: 指定输出文件路径（必需）
-- `--config`: 指定配置文件路径（可选）
-- `--trigger`: 指定触发条件（可选，默认：push, pull_request）
-- `--matrix`: 指定矩阵策略（可选）
+- `--output`: 指定输出文件路径（可选，默认根据类名生成）
+- `--update`: 更新已存在的工作流文件（可选）
 
 ### 生成的 YAML 结构
 
@@ -392,12 +514,12 @@ pip install -r requirements.txt
 
 ### 日志示例
 
-```python
-import logging
+```typescript
+import * as core from '@actions/core';
 
-logger = logging.getLogger(__name__)
-logger.info("Pipeline execution started")
-logger.error("Failed to execute step", exc_info=True)
+// 在 BasePipeline 中使用
+this.log('info', 'Pipeline execution started');
+this.log('error', 'Failed to execute step');
 ```
 
 ## 测试规范
@@ -406,9 +528,10 @@ logger.error("Failed to execute step", exc_info=True)
 
 - 为每个流水线脚本编写单元测试
 - 测试覆盖率应达到 80% 以上
-- 使用 pytest 作为测试框架
-- 测试文件命名：`test_<module_name>.py`
-- 测试函数命名：`test_<function_name>`
+- 使用 Jest 作为测试框架
+- 测试文件命名：`<module-name>.test.ts`
+- 测试函数命名：使用 `describe` 和 `it` 或 `test`
+- 测试文件放在 `src/__tests__/` 目录下
 
 ### 集成测试
 
@@ -420,14 +543,12 @@ logger.error("Failed to execute step", exc_info=True)
 ### 测试目录结构
 
 ```
-tests/
-├── unit/
-│   ├── test_base_pipeline.py
-│   └── test_scaffold.py
-├── integration/
-│   └── test_workflow_generation.py
-└── fixtures/
-    └── sample_configs/
+src/
+└── __tests__/
+    ├── base-pipeline.test.ts
+    ├── scaffold.test.ts
+    ├── workflow-config.test.ts
+    └── workflow-manager.test.ts
 ```
 
 ## 版本管理规范
@@ -441,9 +562,10 @@ tests/
 
 ### 版本更新
 
-- 在 `requirements.txt` 中固定依赖版本
+- 在 `package.json` 中固定依赖版本（使用 `package-lock.json`）
 - 重大更新时更新规则文件版本号
 - 在 README.md 中记录版本变更
+- 遵循语义化版本规范
 
 ## 更新日志
 

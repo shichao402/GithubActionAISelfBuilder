@@ -1,0 +1,63 @@
+# Dependencies
+node_modules/
+package-lock.json
+yarn.lock
+
+# Build outputs
+dist/
+*.tsbuildinfo
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Environment
+.env
+.env.local
+
+# Act
+.actrc
+.act/
+
+# Artifacts
+artifacts/
+*.zip
+*.tar.gz
+
+# Flutter
+flutter-demo/.dart_tool/
+flutter-demo/.flutter-plugins
+flutter-demo/.flutter-plugins-dependencies
+flutter-demo/.packages
+flutter-demo/.pub-cache/
+flutter-demo/.pub/
+flutter-demo/build/
+flutter-demo/.idea/
+flutter-demo/*.iml
+flutter-demo/.metadata
+
+# Test
+coverage/
+.nyc_output/
+*.test.ts.snap
+
+# Project-specific Cursor rules (not shared in repo)
+.cursor/rules/git-push-rule.mdc
+

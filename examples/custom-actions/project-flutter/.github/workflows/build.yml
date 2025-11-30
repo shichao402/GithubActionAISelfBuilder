@@ -1,0 +1,64 @@
+name: Build
+
+# Flutter 项目使用自定义 Action
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - release/**
+  pull_request:
+    branches:
+      - main
+      - develop
+  workflow_dispatch:
+    inputs:
+      flutter-version:
+        description: Flutter 版本
+        required: false
+        default: '3.16.0'
+      build-mode:
+        description: 构建模式
+        required: false
+        default: 'release'
+        type: choice
+        options:
+          - debug
+          - profile
+          - release
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ inputs.flutter-version || '3.16.0' }}
+          channel: stable
+          cache: true
+      
+      - name: Build with custom action
+        id: build
+        uses: ./../../custom-actions/build-action
+        with:
+          setup-command: |
+            flutter doctor -v
+            flutter pub get
+          build-command: |
+            flutter clean
+            flutter build windows --${{ inputs.build-mode || 'release' }}
+          artifact-path: build/windows/runner/Release/**
+          build-type: ${{ inputs.build-mode || 'release' }}
+          upload-artifacts: true
+      
+      - name: Build status
+        run: |
+          echo "构建状态: ${{ steps.build.outputs.build-status }}"
+          echo "产物路径: ${{ steps.build.outputs.artifact-path }}"
+
+

@@ -1,167 +1,285 @@
-# GitHub Action AI Self Builder
+# GitHub Action Builder - TypeScript 版本
 
-一个通用的 GitHub Action 从零构建脚手架工具，通过 AI 协助快速生成和配置 GitHub Actions 工作流。
+一个通用的 GitHub Action 构建脚手架工具，完全使用 TypeScript 实现。支持通过 Pipeline 类定义配置和逻辑，自动生成 GitHub Action 工作流文件。
 
-## 项目简介
+## 核心特性
 
-本项目旨在为任意 GitHub 项目提供一套标准化的 GitHub Action 流水线构建方案。通过提供标准化的流水线脚本基类和脚手架工具，配合 AI 协助，可以快速为项目生成构建、测试、发布等功能的 GitHub Action 工作流。
+1. ✅ **完全 TypeScript**：Pipeline 类、脚手架工具、Actions 全部使用 TypeScript
+2. ✅ **类型安全**：编译时检查，减少错误
+3. ✅ **以派生类为单位生成 YAML**：每个 Pipeline 类对应一个 workflow 文件
+4. ✅ **可复用 Actions**：可以在多个项目中使用
+5. ✅ **使用 act 本地测试**：完全模拟 GitHub Actions 环境
+6. ✅ **跨平台构建**：使用 GitHub Actions 的真实 runner
 
 ## 技术栈
 
-- **语言**: Python
-- **环境**: venv (虚拟环境)
-- **支持平台**: Windows, macOS, Linux
-
-## 环境要求
-
-- Python 3.7+
-- Git
+- **语言**: TypeScript
+- **运行时**: Node.js 18+
+- **测试工具**: act（本地运行 GitHub Actions）
+- **包管理**: npm workspaces
 
 ## 快速开始
 
-### 1. 环境安装
-
-本项目提供了跨平台的通用环境安装脚本，支持 Windows、macOS 和 Linux 三个平台。
-
-#### Windows
-
-```powershell
-# 使用 PowerShell 执行安装脚本
-.\scripts\install.ps1
-```
-
-或者使用批处理文件：
-
-```cmd
-.\scripts\install.bat
-```
-
-#### macOS / Linux
+### 1. 安装依赖
 
 ```bash
-# 使用 bash 执行安装脚本
-chmod +x scripts/install.sh
-./scripts/install.sh
+npm install
 ```
 
-安装脚本会自动：
-- 创建 Python 虚拟环境 (venv)
-- 安装项目依赖
-- 配置必要的环境变量
-
-### 2. 激活虚拟环境
-
-#### Windows
-
-```powershell
-.\venv\Scripts\Activate.ps1
-```
-
-或者：
-
-```cmd
-.\venv\Scripts\activate.bat
-```
-
-#### macOS / Linux
+### 2. 构建 Actions
 
 ```bash
-source venv/bin/activate
+npm run build
 ```
 
-### 3. 验证安装
+### 3. 本地测试（使用 act）
 
 ```bash
-python --version
-pip list
+# 安装 act
+# macOS: brew install act
+# Windows: choco install act-cli
+# Linux: curl https://raw.githubusercontent.com/nektos/act/master/install.sh | sudo bash
+
+# 列出所有工作流
+npm run act:list
+
+# 运行构建工作流
+npm run act:build
+
+# 运行发布工作流
+npm run act:release
 ```
-
-## 项目架构
-
-### 核心概念
-
-1. **流水线脚本基类**: 提供标准化的流水线脚本基类，每个派生类对应一个 GitHub Action 工作流
-2. **配置文件**: 支持通过配置文件扩展和定制流水线行为
-3. **脚手架生成器**: 根据脚本派生类自动生成对应的 GitHub Action YAML 文件
-4. **流水线组合**: 支持将多个脚本流水线组合成更复杂的工作流
-
-## 使用流程
-
-### 步骤 0: 了解基础架构
-
-本项目提供了标准化的流水线脚本基类。设计上，每一个脚本派生类都可以对应生成一个 GitHub Action 工作流。
-
-### 步骤 1: 编写流水线脚本派生类
-
-在 AI 的协助下，编写具体的流水线脚本派生类，完成特定功能（如构建、测试、部署等），并扩展相应的配置文件。
-
-**示例结构**:
-
-```python
-from base_pipeline import BasePipeline
-
-class BuildPipeline(BasePipeline):
-    """构建流水线"""
-    def execute(self):
-        # 实现构建逻辑
-        pass
-```
-
-### 步骤 2: 生成 GitHub Action 工作流
-
-使用本项目提供的脚手架工具，根据脚本派生类自动生成对应的 GitHub Action 工作流 YAML 文件。
-
-```bash
-python scaffold.py --pipeline BuildPipeline --output .github/workflows/build.yml
-```
-
-### 步骤 3: 组织多个流水线
-
-在 AI 的协助下，将多个脚本流水线组合成更复杂的 GitHub Action 工作流，实现完整的 CI/CD 流程。
 
 ## 项目结构
 
 ```
-GithubActionAISelfBuilder/
-├── README.md                 # 项目文档
-├── requirements.txt          # Python 依赖
-├── .github/
-│   └── workflows/           # 生成的 GitHub Action 工作流
-├── scripts/
-│   ├── install.sh           # Linux/macOS 安装脚本
-│   ├── install.bat          # Windows 批处理安装脚本
-│   └── install.ps1          # Windows PowerShell 安装脚本
+github-action-builder/
 ├── src/
-│   ├── base_pipeline.py     # 流水线基类
-│   ├── scaffold.py          # 脚手架生成器
-│   └── pipelines/           # 流水线脚本派生类
-│       └── __init__.py
-├── config/                  # 配置文件目录
-└── venv/                    # Python 虚拟环境（自动生成）
+│   ├── base-pipeline.ts        # Pipeline 基类
+│   ├── workflow-config.ts       # 工作流配置构建器
+│   ├── scaffold.ts             # 脚手架工具
+│   └── pipelines/
+│       ├── flutter-build-pipeline.ts
+│       ├── build-pipeline.ts
+│       └── release-pipeline.ts
+├── actions/
+│   ├── build-action/            # 构建 Action
+│   └── release-action/          # 发布 Action
+├── .github/workflows/           # 生成的 YAML 文件
+├── package.json
+├── tsconfig.json
+└── README.md
+```
+
+## 使用方式
+
+### 1. 创建 Pipeline 类
+
+```typescript
+// src/pipelines/my-pipeline.ts
+import { BasePipeline, PipelineResult } from '../base-pipeline';
+import { createWorkflowConfig } from '../workflow-config';
+
+export class MyPipeline extends BasePipeline {
+  static getWorkflowInputs() {
+    const config = createWorkflowConfig();
+    config.addInput('project-name', '项目名称', true);
+    return config.toDict().inputs || {};
+  }
+
+  static getWorkflowSetup() {
+    const config = createWorkflowConfig();
+    config.setupNode('18', 'npm');
+    return config.toDict().setup || {};
+  }
+
+  static getWorkflowTriggers() {
+    const config = createWorkflowConfig();
+    config.onPush(['main', 'develop']);
+    return config.toDict().triggers || {};
+  }
+
+  async execute(): Promise<PipelineResult> {
+    await this.runCommand('npm run build');
+    return { success: true, message: '构建成功', exitCode: 0 };
+  }
+}
+```
+
+### 2. 生成工作流 YAML
+
+```bash
+npm run build
+npm run scaffold -- --pipeline MyPipeline --output my-pipeline.yml
+```
+
+### 在其他项目中使用
+
+#### 1. 作为本地 Action 使用
+
+```yaml
+# .github/workflows/build.yml
+name: Build
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./path/to/github-action-builder/actions/build-action
+        with:
+          build-command: npm run build
+          artifact-path: dist/**
+```
+
+#### 2. 发布到 GitHub Marketplace
+
+```bash
+# 1. 构建 Action
+cd actions/build-action
+npm run build
+
+# 2. 提交并推送
+git add dist/
+git commit -m "Release v1.0.0"
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+#### 3. 在其他项目中使用发布的 Action
+
+```yaml
+# .github/workflows/build.yml
+name: Build
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: your-org/build-action@v1.0.0
+        with:
+          build-command: npm run build
+```
+
+## 本地测试
+
+### 使用 act
+
+```bash
+# 运行构建工作流
+act -j build
+
+# 运行发布工作流
+act -j release
+
+# 使用特定事件
+act push
+act workflow_dispatch
+```
+
+### 直接运行 Action
+
+```bash
+# 进入 Action 目录
+cd actions/build-action
+
+# 构建
+npm run build
+
+# 测试（需要设置环境变量）
+export INPUT_BUILD-COMMAND="npm run build"
+export INPUT_ARTIFACT-PATH="dist/**"
+node dist/index.js
 ```
 
 ## 开发指南
 
-### 创建新的流水线脚本
+### 创建新的 Action
 
-1. 在 `src/pipelines/` 目录下创建新的 Python 文件
-2. 继承 `BasePipeline` 基类
-3. 实现 `execute()` 方法
-4. 定义必要的配置参数
+1. 创建 Action 目录：
+```bash
+mkdir -p actions/my-action/src
+```
 
-### 配置文件格式
+2. 创建 `action.yml`：
+```yaml
+name: 'My Action'
+description: 'My custom action'
+inputs:
+  my-input:
+    description: 'My input'
+    required: true
+runs:
+  using: 'node20'
+  main: 'dist/index.js'
+```
 
-配置文件支持 JSON 或 YAML 格式，用于定义流水线的参数和行为。
+3. 创建 `package.json`：
+```json
+{
+  "name": "my-action",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "ncc build src/index.ts -o dist"
+  },
+  "dependencies": {
+    "@actions/core": "^1.10.1"
+  }
+}
+```
 
-## 贡献指南
+4. 实现 Action：
+```typescript
+// src/index.ts
+import * as core from '@actions/core'
 
-欢迎提交 Issue 和 Pull Request！
+async function run() {
+  const input = core.getInput('my-input')
+  core.info(`Input: ${input}`)
+}
+
+run()
+```
+
+## 优势
+
+### 相比其他方案
+
+1. ✅ **类型安全**：TypeScript 编译时检查
+2. ✅ **官方支持**：GitHub Actions 官方支持 TypeScript
+3. ✅ **可复用**：可以发布到 GitHub Marketplace
+4. ✅ **本地测试**：使用 act 完全模拟 GitHub Actions
+
+### 使用 act 的优势
+
+1. ✅ **完全模拟**：完全模拟 GitHub Actions 环境
+2. ✅ **不需要 mock**：不需要写本地 mock
+3. ✅ **完整测试**：可以测试完整的流程
+
+## 注意事项
+
+### act 的局限性
+
+1. ⚠️ **跨平台构建**：act 无法构建其他平台的程序
+   - 在 Windows 上无法构建 macOS 程序
+   - 需要使用真实的 GitHub Actions runner
+
+2. ⚠️ **GitHub API**：act 无法连接到真实的 GitHub API
+   - 查询工作流运行需要使用 gh CLI
+   - 创建 Release 需要使用 gh CLI
+
+### 推荐工作流
+
+1. **开发阶段**：使用 act 测试工作流逻辑
+2. **构建阶段**：使用 GitHub Actions 在目标平台构建
+3. **发布阶段**：使用 gh CLI 完成发布操作
 
 ## 许可证
 
-[待定]
-
-## 联系方式
-
-[待定]
-
+MIT

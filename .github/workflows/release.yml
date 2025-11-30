@@ -1,0 +1,37 @@
+name: Release
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 发布版本号
+        required: true
+      release-notes:
+        description: 发布说明
+        required: false
+        default: ""
+      build-branch:
+        description: 构建分支
+        required: false
+        default: build
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Build TypeScript
+        run: npm run build
+      - name: Run ReleasePipeline
+        id: pipeline
+        run: node -e "const { ReleasePipeline } = require('./dist/src/pipelines/release-pipeline'); const pipeline = new ReleasePipeline(); pipeline.run().then(result => { if (!result.success) { process.exit(result.exitCode || 1); } }).catch(err => { console.error(err); process.exit(1); });"
+        env:
+          INPUT_VERSION: ${{ inputs.version || '' }}
+          INPUT_RELEASE_NOTES: ${{ inputs.release-notes || '' }}
+          INPUT_BUILD_BRANCH: ${{ inputs.build-branch || 'build' }}

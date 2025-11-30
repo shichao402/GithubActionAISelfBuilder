@@ -1,0 +1,32 @@
+# 项目配置文件
+# 
+# 此文件指定目标项目的根目录。
+# 如果本项目作为其他项目的子项目，请修改 project.root 指向父项目的根目录。
+
+project:
+  # 目标项目根目录（相对于本配置文件的位置，或绝对路径）
+  # 当前设置为当前项目根目录（本项目）
+  root: "."
+  
+  # 项目名称
+  name: "GitHub Action AI Self Builder"
+  
+  # 项目描述
+  description: "GitHub Action 从零构建脚手架工具"
+
+# 脚手架配置
+scaffold:
+  # 默认输出目录（相对于项目根目录）
+  workflows_dir: ".github/workflows"
+  
+  # 默认运行环境
+  runs_on: "ubuntu-latest"
+
+# 流水线配置
+pipelines:
+  # 默认配置文件目录（相对于项目根目录）
+  config_dir: "config"
+  
+  # 默认脚本目录（相对于项目根目录）
+  scripts_dir: "src/pipelines"
+

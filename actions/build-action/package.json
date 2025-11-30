@@ -1,0 +1,22 @@
+{
+  "name": "build-action",
+  "version": "1.0.0",
+  "description": "标准化构建流程 GitHub Action",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "ncc build src/index.ts -o dist --source-map --license licenses.txt",
+    "test": "echo 'No tests yet'",
+    "package": "npm run build"
+  },
+  "dependencies": {
+    "@actions/core": "^1.10.1",
+    "@actions/exec": "^1.1.1",
+    "@actions/artifact": "^1.1.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@vercel/ncc": "^0.38.1",
+    "typescript": "^5.3.3"
+  }
+}
+

@@ -1,0 +1,46 @@
+name: 'Setup Environment'
+description: '通用环境设置 Action'
+author: 'GitHub Action Builder'
+
+inputs:
+  node-version:
+    description: 'Node.js 版本'
+    required: false
+    default: '18'
+  python-version:
+    description: 'Python 版本'
+    required: false
+    default: '3.9'
+  setup-commands:
+    description: '额外的设置命令（JSON 数组）'
+    required: false
+    default: '[]'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Node.js
+      if: ${{ inputs.node-version != '' }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ inputs.node-version }}
+        cache: 'npm'
+    
+    - name: Set up Python
+      if: ${{ inputs.python-version != '' }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ inputs.python-version }}
+        cache: 'pip'
+    
+    - name: Run setup commands
+      if: ${{ inputs.setup-commands != '[]' }}
+      shell: bash
+      run: |
+        commands=$(echo '${{ inputs.setup-commands }}' | jq -r '.[]')
+        while IFS= read -r cmd; do
+          echo "Running: $cmd"
+          eval "$cmd"
+        done <<< "$commands"
+
+

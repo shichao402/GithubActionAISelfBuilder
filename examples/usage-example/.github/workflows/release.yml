@@ -1,0 +1,32 @@
+name: Release
+
+# 示例：在其他项目中使用 release-action
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 发布版本号
+        required: true
+      build-branch:
+        description: 构建分支
+        required: false
+        default: 'build'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      # 使用 release-action（本地路径引用）
+      - name: Run Release Action
+        uses: ../../actions/release-action
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          version: ${{ inputs.version }}
+          build-branch: ${{ inputs.build-branch }}
+
+

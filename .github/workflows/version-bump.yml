@@ -1,0 +1,38 @@
+name: Version Bump
+on:
+  workflow_dispatch:
+    inputs:
+      version-file:
+        description: 版本号文件路径
+        required: false
+        default: package.json
+      version-type:
+        description: 版本号类型 (major|minor|patch)
+        required: false
+        default: patch
+      commit-changes:
+        description: 是否提交更改
+        required: false
+        default: "true"
+jobs:
+  version_bump:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Build TypeScript
+        run: npm run build
+      - name: Run VersionBumpPipeline
+        id: pipeline
+        run: node -e "const { VersionBumpPipeline } = require('./dist/src/pipelines/version-bump-pipeline'); const pipeline = new VersionBumpPipeline(); pipeline.run().then(result => { if (!result.success) { process.exit(result.exitCode || 1); } }).catch(err => { console.error(err); process.exit(1); });"
+        env:
+          INPUT_VERSION_FILE: ${{ inputs.version-file || 'package.json' }}
+          INPUT_VERSION_TYPE: ${{ inputs.version-type || 'patch' }}
+          INPUT_COMMIT_CHANGES: ${{ inputs.commit-changes || 'true' }}
