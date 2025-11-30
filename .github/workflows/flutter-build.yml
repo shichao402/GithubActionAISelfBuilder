@@ -37,7 +37,7 @@ jobs:
         run: node -e "const { FlutterBuildPipeline } = require('./dist/src/pipelines/flutter-build-pipeline'); const pipeline = new FlutterBuildPipeline(); pipeline.run().then(result => { if (!result.success) { process.exit(result.exitCode || 1); } }).catch(err => { console.error(err); process.exit(1); });"
         env: {}
       - name: Upload artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: success()
         with:
           name: flutterbuild-artifacts

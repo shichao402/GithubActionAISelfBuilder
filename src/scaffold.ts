@@ -424,7 +424,7 @@ export class ScaffoldGenerator {
       
       steps.push({
         name: 'Upload artifacts',
-        uses: 'actions/upload-artifact@v3',
+        uses: 'actions/upload-artifact@v4',
         if: 'success()',
         with: {
           name: artifactName,
