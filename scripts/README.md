@@ -40,24 +40,31 @@ scripts/
 
 - **`install-nodejs.ps1`** - Node.js 安装脚本（可共享）
 - **`ai-debug-workflow.ts`** - AI 调试工作流（可共享）
+- **`test-pipelines.ts`** - Pipeline 验证和调试脚本（可共享）
 
 **在父项目中使用**:
 ```bash
 # 方式 1: 直接使用（如果作为 Git Submodule）
 npm run ai-debug -- .github/workflows/build.yml main
+npm run test:pipelines -- --pipeline YourPipeline --trigger
 
 # 方式 2: 复制到父项目
 cp GithubActionAISelfBuilder/scripts/ai-debug-workflow.ts scripts/
+cp GithubActionAISelfBuilder/scripts/test-pipelines.ts scripts/
 ```
 
 ## 🧪 使用方法
 
 ```bash
+# Pipeline 验证和调试（可共享）
+npm run test:pipelines -- --pipeline YourPipeline --trigger --watch
+npm run test:pipelines -- --all --clean --verify
+
+# AI 调试工作流（可共享）
+npm run ai-debug -- .github/workflows/flutter-build.yml main
+
 # 测试 Flutter Pipeline（仅本项目）
 npm run test:flutter
-
-# AI 调试工作流（本项目）
-npm run ai-debug -- .github/workflows/flutter-build.yml main
 
 # Git 推送（本项目）
 npm run push "提交信息"
