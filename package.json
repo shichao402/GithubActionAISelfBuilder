@@ -4,7 +4,7 @@
   "description": "GitHub Action 构建脚手架工具 - TypeScript 版本",
   "private": true,
   "scripts": {
-    "build": "tsc && npm run build --workspaces --if-present",
+    "build": "tsc",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
