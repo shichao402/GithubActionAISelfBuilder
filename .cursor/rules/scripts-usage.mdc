@@ -8,14 +8,34 @@ alwaysApply: true
 
 本目录包含可共享给其他项目使用的脚本工具。当本项目作为子项目（Git Submodule）被其他项目使用时，这些脚本可以帮助父项目进行 GitHub Actions 的调试和管理。
 
+## ⚠️ 在父项目中使用
+
+**重要**: 当本项目被注入到父项目时：
+- `ProjectOnly/` 目录下的所有文件**会被删除**
+- 共享规则文件（本文件）会保留在父项目中
+- 父项目需要根据实际路径调整脚本和命令的引用
+
+**路径调整原则**:
+1. **导入路径**: 需要指向本项目的实际位置
+   - 如果作为 Git Submodule，使用相对路径：`<子模块路径>/src/...`
+   - 如果使用 npm 包，使用包名：`@your-org/github-action-builder/...`
+2. **命令路径**: 需要在本项目目录下执行，或使用绝对路径
+3. **脚本路径**: 复制脚本后需要调整脚本内部的导入路径
+
 ## 目录结构说明
 
 ### ProjectOnly 目录
 
-**重要**: `ProjectOnly/` 目录下的所有文件（脚本或规则）都是**本项目特有的**，不会共享给父项目使用。
+**重要**: `ProjectOnly/` 目录下的所有文件（脚本或规则）都是**本项目特有的**，在注入到父项目时**会被删除**。
 
-- **规则文件**: `.cursor/rules/ProjectOnly/` - 本项目特有的规则
-- **脚本文件**: `scripts/ProjectOnly/` - 本项目特有的脚本
+**关键特性**:
+- ✅ 本项目开发时：ProjectOnly 文件可用
+- ❌ 注入到父项目时：ProjectOnly 目录下的所有文件**会被删除**
+- 🚫 **共享规则和脚本不得引用 ProjectOnly 的内容**，避免父项目找不到引用
+
+**包含内容**:
+- **规则文件**: `.cursor/rules/ProjectOnly/` - 本项目特有的规则（会被删除）
+- **脚本文件**: `scripts/ProjectOnly/` - 本项目特有的脚本（会被删除）
 
 ### 共享文件
 
@@ -56,15 +76,21 @@ npm run ai-debug -- .github/workflows/build.yml main
 
 ### 方式 1: 直接复制脚本（推荐）
 
-由于脚本位于 `ProjectOnly/` 目录，建议直接复制到父项目：
+由于脚本位于 `ProjectOnly/` 目录（注入时会被删除），建议直接复制到父项目：
 
 ```bash
-# 复制 AI 调试脚本到父项目
-cp GithubActionAISelfBuilder/scripts/ProjectOnly/ai-debug-workflow.ts scripts/
+# 在注入前复制 AI 调试脚本到父项目
+# 注意：需要根据实际的项目路径调整
+cp <本项目路径>/scripts/ProjectOnly/ai-debug-workflow.ts scripts/
 
 # 在父项目中使用
 ts-node scripts/ai-debug-workflow.ts .github/workflows/build.yml main
 ```
+
+**路径说明**:
+- `<本项目路径>` 需要根据实际的项目结构替换（如 Git Submodule 路径）
+- 复制后需要调整脚本中的导入路径（如 `WorkflowManager` 的导入）
+- 导入路径需要指向本项目的 `src/workflow-manager.ts`
 
 ### 方式 2: 创建 npm 脚本包装
 
@@ -88,11 +114,15 @@ npm run ai-debug -- .github/workflows/build.yml main
 如果使用 Git Submodule，需要调整脚本中的导入路径：
 
 ```bash
-# 在父项目中添加子模块
-git submodule add https://github.com/your-org/GithubActionAISelfBuilder.git
+# 在父项目中添加子模块（可以使用自定义名称）
+git submodule add <仓库URL> <子模块名称>
 
-# 复制脚本到父项目（推荐）
-cp GithubActionAISelfBuilder/scripts/ProjectOnly/ai-debug-workflow.ts scripts/
+# 在注入前复制脚本到父项目（推荐）
+cp <子模块路径>/scripts/ProjectOnly/ai-debug-workflow.ts scripts/
+
+# 复制后需要调整脚本中的导入路径
+# 例如：将 '../../src/workflow-manager' 改为 '<子模块相对路径>/src/workflow-manager'
+# 或者使用绝对路径：path.resolve(__dirname, '<子模块路径>', 'src', 'workflow-manager')
 ```
 
 ## AI 助手行为规则
@@ -100,8 +130,10 @@ cp GithubActionAISelfBuilder/scripts/ProjectOnly/ai-debug-workflow.ts scripts/
 当父项目需要调试 GitHub Action 工作流时：
 
 1. **必须使用本项目提供的 AI 调试脚本**
-   - 从 `scripts/ProjectOnly/ai-debug-workflow.ts` 复制到父项目
-   - 或直接使用（需要调整导入路径）
+   - 在注入前从 `<本项目路径>/scripts/ProjectOnly/ai-debug-workflow.ts` 复制到父项目
+   - 复制后需要调整脚本中的导入路径（如 `WorkflowManager` 的导入）
+   - 导入路径需要指向本项目的 `src/workflow-manager.ts`
+   - 或直接使用（需要根据实际路径调整导入）
    - 禁止手动分析或猜测错误原因
 
 2. **遵循调试流程**:
@@ -144,10 +176,21 @@ npm run ai-debug -- .github/workflows/build.yml main
 
 ## 注意事项
 
-1. **路径问题**: 如果作为子模块使用，注意脚本中的相对路径可能需要调整
-2. **权限问题**: 确保 GitHub CLI 有足够的权限访问仓库
-3. **环境变量**: 某些脚本可能需要特定的环境变量
-4. **跨平台**: TypeScript 脚本跨平台，Shell/PowerShell 脚本需要对应平台
+1. **路径问题**: 
+   - 如果作为子模块使用，注意脚本中的相对路径可能需要调整
+   - 所有路径引用需要根据父项目的实际结构调整
+   - 导入路径（如 `import` 语句）需要指向正确的模块位置
+
+2. **ProjectOnly 文件**: 
+   - `ProjectOnly/` 目录下的文件在注入到父项目时会被删除
+   - 需要使用的脚本应在注入前复制到父项目
+   - 复制后需要调整脚本中的导入路径
+
+3. **权限问题**: 确保 GitHub CLI 有足够的权限访问仓库
+
+4. **环境变量**: 某些脚本可能需要特定的环境变量
+
+5. **跨平台**: TypeScript 脚本跨平台，Shell/PowerShell 脚本需要对应平台
 
 ## 更新日志
 

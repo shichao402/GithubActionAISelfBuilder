@@ -128,14 +128,14 @@ describe('WorkflowConfig', () => {
   run: npm run scaffold -- --pipeline TestPipeline --output test.yml
 ```
 
-### 场景 4: Action 执行测试
+### 场景 4: Pipeline 执行测试
 
 ```yaml
 # .github/workflows/test-real.yml
-- name: Test Build Action
-  uses: ./actions/build-action
-  with:
-    build-command: echo "Test"
+- name: Test Build Pipeline
+  run: node -e "const { BuildPipeline } = require('./dist/src/pipelines/build-pipeline'); const pipeline = new BuildPipeline(); pipeline.run();"
+  env:
+    INPUT_BUILD_COMMAND: "echo Test"
 ```
 
 ## 覆盖率目标

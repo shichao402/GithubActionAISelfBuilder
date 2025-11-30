@@ -19,18 +19,6 @@ TypeScript Actions（执行构建/发布）
 
 ```
 github-action-builder/
-├── actions/                    # 可复用的 Actions
-│   ├── build-action/          # 构建 Action
-│   │   ├── action.yml
-│   │   ├── package.json
-│   │   ├── tsconfig.json
-│   │   └── src/
-│   │       └── index.ts
-│   ├── release-action/         # 发布 Action
-│   │   └── ...
-│   └── common/                 # 通用 Actions
-│       ├── setup/              # 环境设置
-│       └── artifact/           # 产物管理
 ├── .github/
 │   └── workflows/
 │       ├── build.yml           # 构建工作流
@@ -72,7 +60,7 @@ github-action-builder/
 
 ```bash
 # 编写 Action 代码
-# actions/build-action/src/index.ts
+# src/pipelines/build-pipeline.ts
 
 # 构建
 npm run build
@@ -89,16 +77,14 @@ jobs:
   build:
     steps:
       - uses: actions/checkout@v3
-      - uses: ./path/to/github-action-builder/actions/build-action
-        with:
-          build-command: npm run build
+      - name: Run BuildPipeline
+        run: node -e "const { BuildPipeline } = require('./dist/src/pipelines/build-pipeline'); const pipeline = new BuildPipeline(); pipeline.run();"
 ```
 
 ### 3. 发布到 GitHub Marketplace
 
 ```bash
-# 构建
-cd actions/build-action
+# 构建项目
 npm run build
 
 # 提交并发布

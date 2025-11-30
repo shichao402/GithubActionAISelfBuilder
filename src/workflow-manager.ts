@@ -47,8 +47,8 @@ export class WorkflowManager {
 
   constructor(projectRoot?: string) {
     this.projectRoot = projectRoot || process.cwd();
-    this.runIdFile = path.join(this.projectRoot, '.github_run_id.txt');
-    this.logDir = path.join(this.projectRoot, 'workflow_logs');
+    this.runIdFile = path.join(this.projectRoot, '.github', '.github_run_id.txt');
+    this.logDir = path.join(this.projectRoot, '.github', 'workflow_logs');
     
     // 检测是否在 GitHub Actions 环境中
     this.isGitHubActions = process.env.GITHUB_ACTIONS === 'true';

@@ -1,64 +1,24 @@
 # Actions 目录
 
-本目录包含所有可复用的 GitHub Actions。
+本目录原本用于存放可复用的 GitHub Actions，但现在已经**不再使用**。
 
-## 结构
+## 历史说明
 
-```
-actions/
-├── build-action/          # 构建 Action
-├── release-action/        # 发布 Action
-└── common/                # 通用 Actions
-    ├── setup/             # 环境设置
-    └── artifact/          # 产物管理
-```
+**注意**：所有 Action 都已被移除或替代：
 
-## 使用方式
+- **`build-action`** 和 **`release-action`**：已被移除，现在使用 **Pipeline 继承**方案实现可复用逻辑
+  - 构建逻辑：使用 `BuildPipeline` 基类和继承它的 Pipeline（如 `FlutterBuildPipeline`）
+  - 发布逻辑：使用 `ReleaseBasePipeline` 基类和继承它的 Pipeline（如 `ReleasePipeline`）
 
-### 1. 本地使用
+- **`debug-action`**：已被移除，功能由 `scripts/ai-debug-workflow.ts` 脚本替代
+  - 使用方式：`npm run ai-debug -- <workflow-file> [ref]`
+  - 详细说明：参考 `docs/ai-self-debug.md` 和 `.cursor/rules/scripts-usage.mdc`
 
-```yaml
-# .github/workflows/build.yml
-jobs:
-  build:
-    steps:
-      - uses: actions/checkout@v3
-      - uses: ./actions/build-action
-        with:
-          build-command: npm run build
-```
+## 当前状态
 
-### 2. 发布后使用
+**此目录已清空，保留仅用于历史记录。**
 
-```yaml
-# .github/workflows/build.yml
-jobs:
-  build:
-    steps:
-      - uses: actions/checkout@v3
-      - uses: your-org/build-action@v1.0.0
-        with:
-          build-command: npm run build
-```
-
-## 开发新 Action
-
-1. 创建目录：`mkdir -p actions/my-action/src`
-2. 创建 `action.yml`
-3. 创建 `package.json`
-4. 实现 TypeScript 代码
-5. 构建：`npm run build`
-
-## 测试
-
-```bash
-# 使用 act 测试
-act -j build
-
-# 或直接运行
-cd actions/build-action
-npm run build
-node dist/index.js
-```
-
+如果需要创建新的 Action，建议：
+1. 使用 Pipeline 继承方案（推荐）
+2. 或创建独立的脚本（如 `scripts/` 目录下的脚本）
 

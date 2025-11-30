@@ -7,32 +7,35 @@ yarn.lock
 dist/
 *.tsbuildinfo
 
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-
 # IDE
 .vscode/
 .idea/
 *.swp
 *.swo
+*.sublime-*
 
 # OS
 .DS_Store
 Thumbs.db
+desktop.ini
 
 # Logs
 *.log
 npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# GitHub Actions runtime files
+.github/.github_run_id.txt
+.github/workflow_logs/
 
 # Environment
 .env
 .env.local
+.env.*.local
 
-# Act
+# Act (local GitHub Actions testing)
 .actrc
 .act/
 
@@ -40,8 +43,9 @@ npm-debug.log*
 artifacts/
 *.zip
 *.tar.gz
+*.tgz
 
-# Flutter
+# Flutter demo
 flutter-demo/.dart_tool/
 flutter-demo/.flutter-plugins
 flutter-demo/.flutter-plugins-dependencies
@@ -57,7 +61,20 @@ flutter-demo/.metadata
 coverage/
 .nyc_output/
 *.test.ts.snap
+.jest-cache/
 
-# Project-specific Cursor rules (not shared in repo)
-.cursor/rules/git-push-rule.mdc
+# Project-specific Cursor rules
+# 注意：ProjectOnly 目录下的规则文件是项目特有的，不应该在父项目中使用
+# 但这些文件应该被提交到仓库，用于项目维护
+# 父项目通过 .cursorignore 文件排除这些规则（见 .cursorignore.example）
+
+# Project-specific configuration (use config.example.yaml as template)
+config.yaml
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+tmp/
+temp/
 

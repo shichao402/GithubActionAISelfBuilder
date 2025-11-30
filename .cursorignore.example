@@ -1,0 +1,21 @@
+# Cursor 规则忽略文件示例
+# 
+# 当本项目作为子模块被父项目使用时，父项目应该创建 `.cursorignore` 文件
+# 来排除本项目特有的规则文件（ProjectOnly 目录）
+#
+# 使用方法：
+# 1. 在父项目根目录创建 `.cursorignore` 文件
+# 2. 复制以下内容到 `.cursorignore` 文件
+# 3. 根据实际的项目路径调整路径（将 <本项目路径> 替换为实际路径）
+
+# 排除本项目特有的规则文件（ProjectOnly 目录）
+# 注意：将 <本项目路径> 替换为实际的项目路径
+# 例如：如果作为 Git Submodule 在 Tools/GithubActionAISelfBuilder 目录下
+# 则使用：Tools/GithubActionAISelfBuilder/.cursor/rules/ProjectOnly/
+<本项目路径>/.cursor/rules/ProjectOnly/
+
+# 如果本项目在父项目的子目录中，也可以使用相对路径
+# 例如：如果父项目在根目录，本项目在 Tools/GithubActionAISelfBuilder
+# 则使用：Tools/GithubActionAISelfBuilder/.cursor/rules/ProjectOnly/
+
+

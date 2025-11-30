@@ -15,14 +15,14 @@
     "act:build": "act -j build",
     "act:release": "act -j release",
     "act:list": "act -l",
-    "clean": "node -e \"const fs=require('fs'),path=require('path');['actions/build-action','actions/release-action','actions/debug-action'].forEach(d=>{['dist','node_modules'].forEach(s=>{const p=path.join(d,s);if(fs.existsSync(p))fs.rmSync(p,{recursive:true,force:true})})})\"",
+    "clean": "rm -rf dist node_modules",
     "push": "ts-node scripts/ProjectOnly/push-git.ts",
     "push:help": "echo 用法: npm run push [提交信息]",
-    "ai-debug": "ts-node scripts/ProjectOnly/ai-debug-workflow.ts"
+    "ai-debug": "ts-node scripts/ai-debug-workflow.ts",
+    "inject": "ts-node scripts/inject-to-parent.ts",
+    "test:cursor-rules": "ts-node scripts/test-cursor-rules.ts",
+    "test:cursor-rules:parent": "bash scripts/test-in-parent-project.sh"
   },
-  "workspaces": [
-    "actions/*"
-  ],
   "dependencies": {
     "@actions/core": "^1.10.1",
     "@actions/exec": "^1.1.1",
@@ -47,7 +47,6 @@
   },
   "files": [
     "src",
-    "actions",
     "docs"
   ]
 }

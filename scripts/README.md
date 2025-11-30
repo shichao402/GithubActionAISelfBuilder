@@ -11,8 +11,8 @@ scripts/
     ├── push-git.ts             # Git 推送脚本（TypeScript，跨平台）
     ├── push-git.ps1            # Git 推送脚本（PowerShell，Windows）
     ├── push-git.sh             # Git 推送脚本（Shell，Linux/Mac）
-    ├── test-flutter-pipeline.ts # 测试 Flutter Pipeline（仅本项目）
-    └── ai-debug-workflow.ts    # AI 调试工作流（功能可共享，但需复制）
+    └── test-flutter-pipeline.ts # 测试 Flutter Pipeline（仅本项目）
+├── ai-debug-workflow.ts        # AI 调试工作流（可共享）
 ```
 
 ## 🚨 重要说明：ProjectOnly 目录
@@ -33,25 +33,21 @@ scripts/
 
 - **`push-git.ts`**, **`push-git.ps1`**, **`push-git.sh`** - Git 推送脚本（本项目使用）
 - **`test-flutter-pipeline.ts`** - 测试 Flutter Pipeline（仅本项目）
-- **`ai-debug-workflow.ts`** - AI 调试工作流（功能通用，但需复制到父项目）
 
 ### 2. 可共享脚本
 
 位于 `scripts/` 根目录：
 
 - **`install-nodejs.ps1`** - Node.js 安装脚本（可共享）
+- **`ai-debug-workflow.ts`** - AI 调试工作流（可共享）
 
-### 3. AI 调试脚本（特殊说明）
-
-**`scripts/ProjectOnly/ai-debug-workflow.ts`** 虽然位于 ProjectOnly 目录，但它的功能是通用的，**可以共享给父项目使用**。
-
-**使用方式**:
+**在父项目中使用**:
 ```bash
-# 方式 1: 复制到父项目（推荐）
-cp GithubActionAISelfBuilder/scripts/ProjectOnly/ai-debug-workflow.ts scripts/
+# 方式 1: 直接使用（如果作为 Git Submodule）
+npm run ai-debug -- .github/workflows/build.yml main
 
-# 方式 2: 在本项目中使用
-npm run ai-debug -- .github/workflows/flutter-build.yml main
+# 方式 2: 复制到父项目
+cp GithubActionAISelfBuilder/scripts/ai-debug-workflow.ts scripts/
 ```
 
 ## 🧪 使用方法

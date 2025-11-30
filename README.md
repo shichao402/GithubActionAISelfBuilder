@@ -8,46 +8,48 @@
 2. ✅ **类型安全**：编译时检查，减少错误
 3. ✅ **以派生类为单位生成 YAML**：每个 Pipeline 类对应一个 workflow 文件
 4. ✅ **可复用 Actions**：可以在多个项目中使用
-5. ✅ **使用 act 本地测试**：完全模拟 GitHub Actions 环境
-6. ✅ **跨平台构建**：使用 GitHub Actions 的真实 runner
+5. ✅ **跨平台构建**：使用 GitHub Actions 的真实 runner
+6. ✅ **AI 自我调试**：自动触发、监控和收集日志
 
 ## 技术栈
 
 - **语言**: TypeScript
 - **运行时**: Node.js 18+
-- **测试工具**: act（本地运行 GitHub Actions）
 - **包管理**: npm workspaces
 
 ## 快速开始
 
-### 1. 安装依赖
+### 1. 安装 Node.js
+
+确保已安装 Node.js 18+ 版本：
+
+```bash
+# 检查 Node.js 版本
+node --version
+
+# 如果未安装，请访问 https://nodejs.org/
+```
+
+### 2. 安装项目依赖
 
 ```bash
 npm install
 ```
 
-### 2. 构建 Actions
+### 3. 构建项目
 
 ```bash
 npm run build
 ```
 
-### 3. 本地测试（使用 act）
+### 4. 本地测试
 
 ```bash
-# 安装 act
-# macOS: brew install act
-# Windows: choco install act-cli
-# Linux: curl https://raw.githubusercontent.com/nektos/act/master/install.sh | sudo bash
+# 运行单元测试
+npm test
 
-# 列出所有工作流
-npm run act:list
-
-# 运行构建工作流
-npm run act:build
-
-# 运行发布工作流
-npm run act:release
+# 运行特定 Pipeline
+npm run test:flutter
 ```
 
 ## 项目结构
@@ -59,12 +61,15 @@ github-action-builder/
 │   ├── workflow-config.ts       # 工作流配置构建器
 │   ├── scaffold.ts             # 脚手架工具
 │   └── pipelines/
-│       ├── flutter-build-pipeline.ts
-│       ├── build-pipeline.ts
-│       └── release-pipeline.ts
-├── actions/
-│   ├── build-action/            # 构建 Action
-│   └── release-action/          # 发布 Action
+│       ├── base/                    # 基类 Pipeline
+│       │   ├── build-pipeline.ts
+│       │   └── release-base-pipeline.ts
+│       ├── build/                   # 构建相关 Pipeline
+│       │   └── flutter-build-pipeline.ts
+│       ├── release/                 # 发布相关 Pipeline
+│       │   └── release-pipeline.ts
+│       └── version/                 # 版本相关 Pipeline
+│           └── version-bump-pipeline.ts
 ├── .github/workflows/           # 生成的 YAML 文件
 ├── package.json
 ├── tsconfig.json
@@ -115,7 +120,7 @@ npm run scaffold -- --pipeline MyPipeline --output my-pipeline.yml
 
 ### 在其他项目中使用
 
-#### 1. 作为本地 Action 使用
+#### 1. 在其他项目中使用 Pipeline
 
 ```yaml
 # .github/workflows/build.yml
@@ -128,82 +133,72 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: ./path/to/github-action-builder/actions/build-action
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
         with:
-          build-command: npm run build
-          artifact-path: dist/**
+          node-version: '18'
+      - name: Install dependencies
+        run: npm ci
+      - name: Build
+        run: npm run build
+      - name: Run BuildPipeline
+        run: node -e "const { BuildPipeline } = require('./dist/src/pipelines/build-pipeline'); const pipeline = new BuildPipeline(); pipeline.run();"
+        env:
+          INPUT_BUILD_COMMAND: "npm run build"
+          INPUT_ARTIFACT_PATH: "dist/**"
 ```
 
-#### 2. 发布到 GitHub Marketplace
+#### 2. 使用 Pipeline 继承
 
-```bash
-# 1. 构建 Action
-cd actions/build-action
-npm run build
+```typescript
+// 在你的项目中
+import { BuildPipeline } from './path/to/github-action-builder/dist/src/pipelines/build-pipeline';
 
-# 2. 提交并推送
-git add dist/
-git commit -m "Release v1.0.0"
-git tag v1.0.0
-git push origin v1.0.0
-```
-
-#### 3. 在其他项目中使用发布的 Action
-
-```yaml
-# .github/workflows/build.yml
-name: Build
-
-on: [push]
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: your-org/build-action@v1.0.0
-        with:
-          build-command: npm run build
+export class MyBuildPipeline extends BuildPipeline {
+  protected async performBuild(): Promise<boolean> {
+    // 实现你的构建逻辑
+    return await this.runCommand('npm run build');
+  }
+}
 ```
 
 ## 本地测试
 
-### 使用 act
+### 运行单元测试
 
 ```bash
-# 运行构建工作流
-act -j build
+# 运行所有测试
+npm test
 
-# 运行发布工作流
-act -j release
+# 监视模式
+npm run test:watch
 
-# 使用特定事件
-act push
-act workflow_dispatch
+# 覆盖率报告
+npm run test:coverage
 ```
 
-### 直接运行 Action
+### 直接运行 Pipeline
 
 ```bash
-# 进入 Action 目录
-cd actions/build-action
-
-# 构建
+# 构建项目
 npm run build
 
-# 测试（需要设置环境变量）
-export INPUT_BUILD-COMMAND="npm run build"
-export INPUT_ARTIFACT-PATH="dist/**"
-node dist/index.js
+# 运行 Pipeline
+ts-node -e "const { BuildPipeline } = require('./dist/src/pipelines/build-pipeline'); const pipeline = new BuildPipeline(); pipeline.run();"
+
+# 运行 Pipeline（需要设置环境变量）
+export INPUT_BUILD_COMMAND="npm run build"
+export INPUT_ARTIFACT_PATH="dist/**"
+node -e "const { BuildPipeline } = require('./dist/src/pipelines/build-pipeline'); const pipeline = new BuildPipeline(); pipeline.run();"
 ```
 
 ## 开发指南
 
-### 创建新的 Action
+### 创建新的 Pipeline
 
-1. 创建 Action 目录：
+1. 创建 Pipeline 文件：
 ```bash
-mkdir -p actions/my-action/src
+touch src/pipelines/my-pipeline.ts
 ```
 
 2. 创建 `action.yml`：
@@ -254,29 +249,50 @@ run()
 1. ✅ **类型安全**：TypeScript 编译时检查
 2. ✅ **官方支持**：GitHub Actions 官方支持 TypeScript
 3. ✅ **可复用**：可以发布到 GitHub Marketplace
-4. ✅ **本地测试**：使用 act 完全模拟 GitHub Actions
+4. ✅ **AI 自我调试**：自动触发、监控和收集日志
 
-### 使用 act 的优势
+## AI 自我调试
 
-1. ✅ **完全模拟**：完全模拟 GitHub Actions 环境
-2. ✅ **不需要 mock**：不需要写本地 mock
-3. ✅ **完整测试**：可以测试完整的流程
+本项目实现了 AI 自我调试 GitHub Actions workflow 的能力，可以：
+
+1. ✅ **自动触发 workflow** - 使用 GitHub CLI
+2. ✅ **实时监控状态** - 持续监控执行状态
+3. ✅ **自动收集日志** - 失败时自动收集详细错误日志
+4. ✅ **AI 分析支持** - 日志格式优化，便于 AI 分析
+
+### 快速使用
+
+```typescript
+import { WorkflowManager } from './src/workflow-manager';
+
+const manager = new WorkflowManager();
+
+// 触发并监控 workflow
+const result = await manager.runWorkflow('.github/workflows/build.yml', {
+  ref: 'main',
+  inputs: { version: '1.0.0' },
+});
+
+if (!result.success) {
+  // 失败时自动收集日志
+  const logFile = await manager.collectWorkflowLogs(result.runId);
+  // 日志可用于 AI 分析
+}
+```
+
+详细文档请参考 [docs/ai-self-debug.md](docs/ai-self-debug.md)
 
 ## 注意事项
 
-### act 的局限性
+### 跨平台构建
 
-1. ⚠️ **跨平台构建**：act 无法构建其他平台的程序
-   - 在 Windows 上无法构建 macOS 程序
-   - 需要使用真实的 GitHub Actions runner
-
-2. ⚠️ **GitHub API**：act 无法连接到真实的 GitHub API
-   - 查询工作流运行需要使用 gh CLI
-   - 创建 Release 需要使用 gh CLI
+- ⚠️ **跨平台构建**：需要使用真实的 GitHub Actions runner
+  - 在 Windows 上无法构建 macOS 程序
+  - 使用 GitHub Actions 在目标平台构建
 
 ### 推荐工作流
 
-1. **开发阶段**：使用 act 测试工作流逻辑
+1. **开发阶段**：本地运行 Pipeline 测试逻辑
 2. **构建阶段**：使用 GitHub Actions 在目标平台构建
 3. **发布阶段**：使用 gh CLI 完成发布操作
 

@@ -74,22 +74,79 @@ export class ScaffoldGenerator {
 
   /**
    * 加载项目配置
+   * 
+   * 配置加载优先级：
+   * 1. 如果指定了 configFile，直接使用
+   * 2. 如果是本项目（存在 config/ProjectOnly/config.yaml），优先使用 ProjectOnly 配置
+   * 3. 否则使用根目录的 config.yaml（父项目使用）
    */
   private loadProjectConfig(configFile?: string): any {
-    const configPath = configFile
-      ? path.resolve(configFile)
-      : path.join(this.projectRoot, 'config.yaml');
-
-    if (!fs.existsSync(configPath)) {
+    let config: any = {};
+    
+    // 如果指定了配置文件，直接使用
+    if (configFile) {
+      const configPath = path.resolve(configFile);
+      if (fs.existsSync(configPath)) {
+        try {
+          return yaml.load(fs.readFileSync(configPath, 'utf8')) || {};
+        } catch (e) {
+          console.warn(`加载指定配置文件失败: ${e}`);
+          return {};
+        }
+      }
       return {};
     }
 
-    try {
-      return yaml.load(fs.readFileSync(configPath, 'utf8')) || {};
-    } catch (e) {
-      console.warn(`加载配置文件失败: ${e}`);
-      return {};
+    // 检查是否是本项目（存在 config/ProjectOnly/config.yaml）
+    const projectOnlyConfigPath = path.join(this.projectRoot, 'config', 'ProjectOnly', 'config.yaml');
+    const isThisProject = fs.existsSync(projectOnlyConfigPath);
+
+    if (isThisProject) {
+      // 本项目：优先使用 ProjectOnly 配置
+      try {
+        const projectOnlyConfig = yaml.load(fs.readFileSync(projectOnlyConfigPath, 'utf8')) || {};
+        config = { ...config, ...projectOnlyConfig };
+      } catch (e) {
+        console.warn(`加载 ProjectOnly 配置文件失败: ${e}`);
+      }
+    } else {
+      // 父项目：使用根目录的 config.yaml
+      const mainConfigPath = path.join(this.projectRoot, 'config.yaml');
+      if (fs.existsSync(mainConfigPath)) {
+        try {
+          const mainConfig = yaml.load(fs.readFileSync(mainConfigPath, 'utf8')) || {};
+          config = { ...config, ...mainConfig };
+        } catch (e) {
+          console.warn(`加载主配置文件失败: ${e}`);
+        }
+      }
     }
+
+    return config;
+  }
+
+  /**
+   * 深度合并配置对象
+   */
+  private mergeConfig(base: any, override: any): any {
+    const result = { ...base };
+    for (const key in override) {
+      if (override.hasOwnProperty(key)) {
+        if (
+          typeof override[key] === 'object' &&
+          override[key] !== null &&
+          !Array.isArray(override[key]) &&
+          typeof base[key] === 'object' &&
+          base[key] !== null &&
+          !Array.isArray(base[key])
+        ) {
+          result[key] = this.mergeConfig(base[key], override[key]);
+        } else {
+          result[key] = override[key];
+        }
+      }
+    }
+    return result;
   }
 
   /**
@@ -116,7 +173,8 @@ export class ScaffoldGenerator {
     }
 
     // 如果 Registry 中没有，回退到文件系统查找（向后兼容）
-    const pipelineFiles = this.findPipelineFiles();
+    const includeProjectOnly = this.shouldIncludeProjectOnly();
+    const pipelineFiles = this.findPipelineFiles(includeProjectOnly);
 
     for (const file of pipelineFiles) {
       try {
@@ -162,9 +220,26 @@ export class ScaffoldGenerator {
   }
 
   /**
-   * 查找 Pipeline 文件
+   * 判断是否应该包含 ProjectOnly 目录
+   * 从配置文件读取 pipelines.include_project_only 配置
    */
-  private findPipelineFiles(): string[] {
+  private shouldIncludeProjectOnly(): boolean {
+    // 从配置读取
+    if (this.config?.pipelines?.include_project_only !== undefined) {
+      return this.config.pipelines.include_project_only === true;
+    }
+    
+    // 默认：如果在本项目目录中，包含 ProjectOnly
+    const isInProjectRoot = this.projectRoot === process.cwd() || 
+                            this.projectRoot.includes('GithubActionAISelfBuilder');
+    return isInProjectRoot;
+  }
+
+  /**
+   * 查找 Pipeline 文件（递归查找所有子目录）
+   * @param includeProjectOnly 是否包含 ProjectOnly 目录（仅用于本项目）
+   */
+  private findPipelineFiles(includeProjectOnly: boolean = false): string[] {
     const files: string[] = [];
     const pipelinesPath = this.pipelinesDir;
 
@@ -172,16 +247,40 @@ export class ScaffoldGenerator {
       return files;
     }
 
-    const entries = fs.readdirSync(pipelinesPath, { withFileTypes: true });
-    for (const entry of entries) {
-      if (entry.isFile() && entry.name.endsWith('.ts') && !entry.name.startsWith('_')) {
-        const filePath = path.join(pipelinesPath, entry.name);
-        // 保留完整路径，包括 .ts 扩展名，以便 ts-node 可以处理
-        files.push(filePath);
+    const findFilesRecursive = (dir: string): void => {
+      const entries = fs.readdirSync(dir, { withFileTypes: true });
+      for (const entry of entries) {
+        const fullPath = path.join(dir, entry.name);
+        if (entry.isDirectory()) {
+          // 跳过 ProjectOnly 目录（除非明确指定包含）
+          if (entry.name === 'ProjectOnly' && !includeProjectOnly) {
+            continue;
+          }
+          // 递归查找子目录
+          findFilesRecursive(fullPath);
+        } else if (entry.isFile() && entry.name.endsWith('.ts') && !entry.name.startsWith('_')) {
+          // 保留完整路径，包括 .ts 扩展名，以便 ts-node 可以处理
+          files.push(fullPath);
+        }
       }
-    }
+    };
 
+    findFilesRecursive(pipelinesPath);
     return files;
+  }
+
+  /**
+   * 检查 Pipeline 类是否继承自指定的基类（通过原型链检查）
+   */
+  private isSubclassOf(PipelineClass: typeof BasePipeline, baseClassName: string): boolean {
+    let current: any = PipelineClass;
+    while (current && current !== BasePipeline) {
+      if (current.name === baseClassName) {
+        return true;
+      }
+      current = Object.getPrototypeOf(current);
+    }
+    return false;
   }
 
   /**
@@ -227,25 +326,36 @@ export class ScaffoldGenerator {
       config.jobs = jobs;
     }
 
-    // 获取模块路径（从文件路径推断）
-    const pipelineFiles = this.findPipelineFiles();
-    let modulePath = className.toLowerCase().replace('pipeline', '');
+    // 优先从 Registry 获取模块路径
+    const registry = getPipelineRegistry();
+    const registryMetadata = registry.getMetadata(className);
+    let modulePath: string;
     
-    // 尝试从文件路径找到匹配的文件
-    for (const file of pipelineFiles) {
-      const fileName = path.basename(file, '.ts');
-      // 更精确的匹配：检查文件名是否包含类名（去掉 Pipeline 后缀）
-      const classNameBase = className.replace(/Pipeline$/i, '').toLowerCase();
-      const fileNameBase = fileName.replace(/-/g, '').toLowerCase();
+    if (registryMetadata?.modulePath) {
+      // 使用 Registry 中保存的模块路径
+      modulePath = registryMetadata.modulePath;
+    } else {
+      // 如果 Registry 中没有，从文件路径推断
+      const includeProjectOnly = this.shouldIncludeProjectOnly();
+      const pipelineFiles = this.findPipelineFiles(includeProjectOnly);
+      modulePath = className.toLowerCase().replace('pipeline', '');
       
-      if (fileNameBase.includes(classNameBase) || classNameBase.includes(fileNameBase.replace(/-/g, ''))) {
-        // 获取相对于 src/pipelines 的路径，保留原始文件名
-        const relativePath = path.relative(
-          path.join(this.projectRoot, 'src', 'pipelines'),
-          file.replace(/\.ts$/, '')
-        );
-        modulePath = relativePath.replace(/\\/g, '/');
-        break;
+      // 尝试从文件路径找到匹配的文件
+      for (const file of pipelineFiles) {
+        const fileName = path.basename(file, '.ts');
+        // 更精确的匹配：检查文件名是否包含类名（去掉 Pipeline 后缀）
+        const classNameBase = className.replace(/Pipeline$/i, '').toLowerCase();
+        const fileNameBase = fileName.replace(/-/g, '').toLowerCase();
+        
+        if (fileNameBase.includes(classNameBase) || classNameBase.includes(fileNameBase.replace(/-/g, ''))) {
+          // 获取相对于 src/pipelines 的路径，保留原始文件名
+          const relativePath = path.relative(
+            path.join(this.projectRoot, 'src', 'pipelines'),
+            file.replace(/\.ts$/, '')
+          );
+          modulePath = relativePath.replace(/\\/g, '/');
+          break;
+        }
       }
     }
 
@@ -328,10 +438,15 @@ export class ScaffoldGenerator {
 
   /**
    * 生成步骤
+   * 
+   * @param metadata Pipeline 元数据
+   * @param config 工作流配置
+   * @param PipelineClass Pipeline 类（用于检查继承关系）
    */
   private generateSteps(
     metadata: ScaffoldPipelineMetadata,
-    config: WorkflowConfigDict
+    config: WorkflowConfigDict,
+    PipelineClass?: typeof BasePipeline
   ): any[] {
     const steps: any[] = [];
 
@@ -410,8 +525,12 @@ export class ScaffoldGenerator {
     // 检查条件：
     // 1. setup.steps 中包含 'artifact' 关键字
     // 2. Pipeline 名称包含 'build'（构建类 Pipeline 通常需要上传产物）
-    // 3. 或者 Pipeline 设置了 artifact-path 输出
+    // 3. Pipeline 继承自 BuildPipeline（通过检查原型链）
+    // 4. 或者 Pipeline 设置了 artifact-path 输出
     const hasArtifactStep = config.setup?.steps?.some((s: any) => s.name?.includes('artifact'));
+    
+    // 检查是否继承自 BuildPipeline（需要在 analyzePipeline 中检查）
+    // 这里通过类名简单判断，实际应该在 analyzePipeline 中检查
     const isBuildPipeline = metadata.name.toLowerCase().includes('build');
     const hasArtifactOutput = config.inputs && Object.keys(config.inputs).some(key => 
       key.toLowerCase().includes('artifact') || key.toLowerCase().includes('output')
