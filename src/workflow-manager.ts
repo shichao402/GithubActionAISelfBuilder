@@ -43,15 +43,41 @@ export class WorkflowManager {
   private projectRoot: string;
   private runIdFile: string;
   private logDir: string;
+  private isGitHubActions: boolean;
 
   constructor(projectRoot?: string) {
     this.projectRoot = projectRoot || process.cwd();
     this.runIdFile = path.join(this.projectRoot, '.github_run_id.txt');
     this.logDir = path.join(this.projectRoot, 'workflow_logs');
+    
+    // 检测是否在 GitHub Actions 环境中
+    this.isGitHubActions = process.env.GITHUB_ACTIONS === 'true';
 
     // 确保日志目录存在
     if (!fs.existsSync(this.logDir)) {
       fs.mkdirSync(this.logDir, { recursive: true });
+    }
+  }
+
+  /**
+   * 日志输出（自动适配本地和 CI 环境）
+   */
+  private logInfo(message: string): void {
+    if (this.isGitHubActions) {
+      core.info(message);
+    } else {
+      console.log(message);
+    }
+  }
+
+  /**
+   * 错误输出（自动适配本地和 CI 环境）
+   */
+  private logError(message: string): void {
+    if (this.isGitHubActions) {
+      core.error(message);
+    } else {
+      console.error(message);
     }
   }
 
@@ -247,12 +273,12 @@ export class WorkflowManager {
   ): Promise<{ success: boolean; exitCode: number }> {
     // 检查 GitHub CLI
     if (!(await this.checkGhCli())) {
-      core.error('错误：未找到 GitHub CLI (gh)');
+      this.logError('错误：未找到 GitHub CLI (gh)');
       return { success: false, exitCode: 1 };
     }
 
     if (!(await this.checkGhAuth())) {
-      core.error('错误：GitHub CLI 未登录');
+      this.logError('错误：GitHub CLI 未登录');
       return { success: false, exitCode: 1 };
     }
 
@@ -262,11 +288,11 @@ export class WorkflowManager {
         try {
           runId = parseInt(fs.readFileSync(this.runIdFile, 'utf8').trim(), 10);
         } catch {
-          core.error('错误：无法从文件读取 run ID');
+          this.logError('错误：无法从文件读取 run ID');
           return { success: false, exitCode: 1 };
         }
       } else {
-        core.error('错误：必须提供 run ID');
+        this.logError('错误：必须提供 run ID');
         return { success: false, exitCode: 1 };
       }
     }
@@ -274,21 +300,21 @@ export class WorkflowManager {
     // 获取 run 信息
     const runInfo = await this.getRunInfo(runId);
     if (!runInfo) {
-      core.error(`错误：无法获取 run 信息\n请检查 run ID 是否正确: ${runId}`);
+      this.logError(`错误：无法获取 run 信息\n请检查 run ID 是否正确: ${runId}`);
       return { success: false, exitCode: 1 };
     }
 
-    core.info(`Workflow: ${runInfo.workflowName || 'Unknown'}`);
-    core.info(`分支: ${runInfo.headBranch || 'Unknown'}`);
-    core.info(`事件: ${runInfo.event || 'Unknown'}`);
+    this.logInfo(`Workflow: ${runInfo.workflowName || 'Unknown'}`);
+    this.logInfo(`分支: ${runInfo.headBranch || 'Unknown'}`);
+    this.logInfo(`事件: ${runInfo.event || 'Unknown'}`);
     if (runInfo.url) {
-      core.info(`URL: ${runInfo.url}`);
+      this.logInfo(`URL: ${runInfo.url}`);
     }
 
     const pollInterval = options.pollInterval || 5;
     let iteration = 0;
 
-    core.info(`开始监控 workflow 状态（每 ${pollInterval} 秒查询一次）...`);
+    this.logInfo(`开始监控 workflow 状态（每 ${pollInterval} 秒查询一次）...`);
 
     // 监控循环
     while (true) {
@@ -297,7 +323,7 @@ export class WorkflowManager {
       const statusInfo = await this.getRunInfo(runId);
       if (!statusInfo) {
         const timestamp = new Date().toISOString();
-        core.info(`[${timestamp}] [${iteration}] 无法获取状态信息`);
+        this.logInfo(`[${timestamp}] [${iteration}] 无法获取状态信息`);
         await new Promise((resolve) => setTimeout(resolve, pollInterval * 1000));
         continue;
       }
@@ -310,32 +336,32 @@ export class WorkflowManager {
       const timestamp = new Date().toISOString();
 
       if (statusInfo.status === 'queued') {
-        core.info(`[${timestamp}] [${iteration}] 状态: 排队中...`);
+        this.logInfo(`[${timestamp}] [${iteration}] 状态: 排队中...`);
       } else if (statusInfo.status === 'in_progress') {
-        core.info(`[${timestamp}] [${iteration}] 状态: 运行中...`);
+        this.logInfo(`[${timestamp}] [${iteration}] 状态: 运行中...`);
       } else if (statusInfo.status === 'completed') {
         if (statusInfo.conclusion === 'success') {
-          core.info(`[${timestamp}] [${iteration}] 状态: 完成 - 成功！`);
-          core.info('========================================');
-          core.info('  Workflow 执行成功！');
-          core.info('========================================');
+          this.logInfo(`[${timestamp}] [${iteration}] 状态: 完成 - 成功！`);
+          this.logInfo('========================================');
+          this.logInfo('  Workflow 执行成功！');
+          this.logInfo('========================================');
           return { success: true, exitCode: 0 };
         } else {
-          core.error(`[${timestamp}] [${iteration}] 状态: 完成 - 失败！`);
-          core.error('========================================');
-          core.error('  Workflow 执行失败！');
-          core.error('========================================');
+          this.logError(`[${timestamp}] [${iteration}] 状态: 完成 - 失败！`);
+          this.logError('========================================');
+          this.logError('  Workflow 执行失败！');
+          this.logError('========================================');
 
           // 自动收集失败日志
           const logFile = await this.collectWorkflowLogs(runId);
           if (logFile) {
-            core.info(`✓ 错误日志已保存到: ${logFile}`);
+            this.logInfo(`✓ 错误日志已保存到: ${logFile}`);
           }
 
           return { success: false, exitCode: 1 };
         }
       } else {
-        core.info(`[${timestamp}] [${iteration}] 状态: ${statusInfo.status}`);
+        this.logInfo(`[${timestamp}] [${iteration}] 状态: ${statusInfo.status}`);
       }
 
       // 等待下一次查询
@@ -347,7 +373,7 @@ export class WorkflowManager {
    * 收集 workflow 日志（用于 AI 分析）
    */
   async collectWorkflowLogs(runId: number): Promise<string | null> {
-    core.info('正在收集 workflow 日志...');
+    this.logInfo('正在收集 workflow 日志...');
     const logFile = path.join(this.logDir, `workflow_${runId}_error.log`);
 
     try {
@@ -412,7 +438,7 @@ export class WorkflowManager {
 
         // 获取每个失败 job 的日志
         for (const job of failedJobs) {
-          core.info(`正在获取 Job '${job.name}' (ID: ${job.id}) 的日志...`);
+          this.logInfo(`正在获取 Job '${job.name}' (ID: ${job.id}) 的日志...`);
 
           logContent.push('');
           logContent.push('='.repeat(80));
@@ -506,7 +532,7 @@ export class WorkflowManager {
       fs.writeFileSync(logFile, logContent.join('\n'), 'utf8');
       return logFile;
     } catch (error: any) {
-      core.error(`收集日志失败: ${error.message}`);
+      this.logError(`收集日志失败: ${error.message}`);
       return null;
     }
   }
@@ -523,10 +549,10 @@ export class WorkflowManager {
     } = {}
   ): Promise<{ success: boolean; exitCode: number }> {
     // 步骤 1: 触发 workflow
-    core.info('==========================================');
-    core.info('  步骤 1: 触发 Workflow');
-    core.info('==========================================');
-    core.info('');
+    this.logInfo('==========================================');
+    this.logInfo('  步骤 1: 触发 Workflow');
+    this.logInfo('==========================================');
+    this.logInfo('');
 
     const triggerResult = await this.triggerWorkflow(workflowFile, {
       ref: options.ref,
@@ -534,18 +560,18 @@ export class WorkflowManager {
     });
 
     if (!triggerResult.success) {
-      core.error(triggerResult.message);
+      this.logError(triggerResult.message);
       return { success: false, exitCode: 1 };
     }
 
-    core.info(triggerResult.message);
-    core.info('');
+    this.logInfo(triggerResult.message);
+    this.logInfo('');
 
     // 步骤 2: 监控 workflow
-    core.info('==========================================');
-    core.info('  步骤 2: 监控 Workflow');
-    core.info('==========================================');
-    core.info('');
+    this.logInfo('==========================================');
+    this.logInfo('  步骤 2: 监控 Workflow');
+    this.logInfo('==========================================');
+    this.logInfo('');
 
     return this.monitorWorkflow(triggerResult.runId, {
       pollInterval: options.pollInterval,

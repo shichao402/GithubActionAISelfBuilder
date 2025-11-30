@@ -9,9 +9,11 @@
  * 4. 分析日志并提供修正建议
  *
  * 用法:
- *   ts-node scripts/ai-debug-workflow.ts <workflow-file> [ref]
+ *   ts-node scripts/test/ai-debug-workflow.ts <workflow-file> [ref]
  *   或
  *   npm run ai-debug -- <workflow-file> [ref]
+ * 
+ * 注意：此脚本仅用于测试本项目，不作为子项目提供
  */
 
 import { WorkflowManager } from '../src/workflow-manager';
@@ -107,11 +109,13 @@ async function main() {
     console.error('❌ 错误: 请指定工作流文件');
     console.error('');
     console.error('用法:');
-    console.error('  ts-node scripts/ai-debug-workflow.ts <workflow-file> [ref]');
+    console.error('  ts-node scripts/test/ai-debug-workflow.ts <workflow-file> [ref]');
+    console.error('  或');
+    console.error('  npm run ai-debug -- <workflow-file> [ref]');
     console.error('');
     console.error('示例:');
-    console.error('  ts-node scripts/ai-debug-workflow.ts .github/workflows/flutter-build.yml');
-    console.error('  ts-node scripts/ai-debug-workflow.ts .github/workflows/flutter-build.yml main');
+    console.error('  npm run ai-debug -- .github/workflows/flutter-build.yml');
+    console.error('  npm run ai-debug -- .github/workflows/flutter-build.yml main');
     process.exit(1);
   }
 

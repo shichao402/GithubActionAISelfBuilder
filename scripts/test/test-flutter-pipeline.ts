@@ -2,7 +2,11 @@
  * 本地测试 Flutter Build Pipeline
  * 
  * 使用方法：
- *   npx ts-node scripts/test-flutter-pipeline.ts
+ *   npx ts-node scripts/test/test-flutter-pipeline.ts
+ *   或
+ *   npm run test:flutter
+ * 
+ * 注意：此脚本仅用于测试本项目，不作为子项目提供
  */
 
 import { FlutterBuildPipeline } from '../src/pipelines/flutter-build-pipeline';
