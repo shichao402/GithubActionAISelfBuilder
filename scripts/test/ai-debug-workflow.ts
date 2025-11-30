@@ -21,11 +21,14 @@ import { WorkflowManager } from '../../src/workflow-manager';
 import * as fs from 'fs';
 import * as path from 'path';
 
-// 支持作为子模块使用：检测是否在子模块目录中
+// 支持作为子模块使用：自动检测项目根目录
+// 1. 首先尝试从 scripts/test/ 向上查找（本项目使用）
+// 2. 然后尝试从可能的子模块路径查找（父项目使用）
 const scriptDir = __dirname;
 const possibleProjectRoots = [
-  path.resolve(scriptDir, '../..'),  // 从 scripts/test/ 到项目根
-  path.resolve(scriptDir, '../../..'), // 从父项目的子模块路径
+  path.resolve(scriptDir, '../..'),      // 从 scripts/test/ 到项目根（本项目）
+  path.resolve(scriptDir, '../../..'),    // 从父项目的子模块路径（如 parent/GithubActionAISelfBuilder/scripts/test/）
+  path.resolve(process.cwd(), 'GithubActionAISelfBuilder'), // 父项目根目录下的子模块
 ];
 
 // 查找包含 src/workflow-manager.ts 的目录作为项目根
