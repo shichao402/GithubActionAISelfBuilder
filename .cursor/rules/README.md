@@ -97,4 +97,5 @@ ts-node scripts/inject-to-parent.ts <父项目路径>
 - **规则管理方案**: `docs/cursor-rules-management.md`
 - **父项目使用指南**: `PARENT_PROJECT_USAGE.md`
 - **注入脚本**: `scripts/inject-to-parent.ts`
+- **Pipeline 验证脚本**: `scripts/test-pipelines.ts`（见 `scripts-usage.mdc`）
 

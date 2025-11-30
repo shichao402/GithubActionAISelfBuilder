@@ -20,8 +20,6 @@
     "push:help": "echo 用法: npm run push [提交信息]",
     "ai-debug": "ts-node scripts/ai-debug-workflow.ts",
     "inject": "ts-node scripts/inject-to-parent.ts",
-    "test:cursor-rules": "ts-node scripts/test-cursor-rules.ts",
-    "test:cursor-rules:parent": "bash scripts/test-in-parent-project.sh",
     "test:pipelines": "ts-node scripts/test-pipelines.ts"
   },
   "dependencies": {
