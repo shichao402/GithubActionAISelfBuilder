@@ -11,14 +11,14 @@
     "lint": "eslint . --ext .ts",
     "format": "prettier --write \"**/*.{ts,json,md}\"",
     "scaffold": "ts-node src/scaffold.ts",
-    "test:flutter": "ts-node scripts/test/test-flutter-pipeline.ts",
+    "test:flutter": "ts-node scripts/ProjectOnly/test-flutter-pipeline.ts",
     "act:build": "act -j build",
     "act:release": "act -j release",
     "act:list": "act -l",
     "clean": "node -e \"const fs=require('fs'),path=require('path');['actions/build-action','actions/release-action','actions/debug-action'].forEach(d=>{['dist','node_modules'].forEach(s=>{const p=path.join(d,s);if(fs.existsSync(p))fs.rmSync(p,{recursive:true,force:true})})})\"",
-    "push": "ts-node scripts/push-git.ts",
+    "push": "ts-node scripts/ProjectOnly/push-git.ts",
     "push:help": "echo 用法: npm run push [提交信息]",
-    "ai-debug": "ts-node scripts/test/ai-debug-workflow.ts"
+    "ai-debug": "ts-node scripts/ProjectOnly/ai-debug-workflow.ts"
   },
   "workspaces": [
     "actions/*"

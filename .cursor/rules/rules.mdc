@@ -179,7 +179,10 @@ GithubActionAISelfBuilder/
 ├── jest.config.js            # Jest 测试配置
 ├── .cursor/
 │   └── rules/
-│       └── rules.mdc         # AI 规则文件（本文件）
+│       ├── rules.mdc         # AI 规则文件（本文件，共享）
+│       ├── scripts-usage.mdc # 脚本使用规则（共享给父项目）
+│       └── ProjectOnly/      # 本项目特有的规则（不共享）
+│           └── git-push-rule.mdc
 ├── .github/
 │   └── workflows/           # 生成的 GitHub Action 工作流
 ├── actions/                  # 可复用的 GitHub Actions
