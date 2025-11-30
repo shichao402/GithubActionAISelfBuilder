@@ -4,15 +4,23 @@
  * 核心流程：
  * 1. 下载构建产物
  * 2. 创建 GitHub Release
+ * 
+ * 使用 GitHub API 客户端抽象层，根据运行环境自动选择实现：
+ * - GitHub Actions 环境：使用 @actions/github（自动使用 GITHUB_TOKEN）
+ * - 本地环境：使用 GitHub CLI（需要 gh auth login）
  */
 
 import { ReleaseBasePipeline } from '../base/release-base-pipeline';
 import { PipelineResult } from '../../base-pipeline';
-import * as exec from '@actions/exec';
+import { createGitHubApiClient } from '../../github-api-client';
 import * as fs from 'fs';
 import * as path from 'path';
 
 export class ReleasePipeline extends ReleaseBasePipeline {
+  private githubClient = createGitHubApiClient(
+    (level: 'info' | 'warning' | 'error' | 'debug', message: string) => this.log(level, message)
+  );
+
   /**
    * 定义工作流输入参数（继承自 ReleaseBasePipeline）
    */
@@ -20,7 +28,6 @@ export class ReleasePipeline extends ReleaseBasePipeline {
     // 继承父类的输入参数
     return super.getWorkflowInputs();
   }
-
 
   /**
    * 查询构建分支的工作流运行 ID（覆盖父类方法，实现具体逻辑）
@@ -30,42 +37,7 @@ export class ReleasePipeline extends ReleaseBasePipeline {
       return null;
     }
 
-    try {
-      let output = '';
-      const options = {
-        listeners: {
-          stdout: (data: Buffer) => {
-            output += data.toString();
-          },
-        },
-        silent: true,
-      };
-
-      await exec.exec(
-        'gh',
-        [
-          'run',
-          'list',
-          '--branch',
-          buildBranch,
-          '--status',
-          'success',
-          '--limit',
-          '1',
-          '--json',
-          'databaseId',
-          '--jq',
-          '.[0].databaseId',
-        ],
-        options
-      );
-
-      const runId = output.trim();
-      return runId && runId !== 'null' ? runId : null;
-    } catch (error: any) {
-      this.log('warning', `查询工作流运行失败: ${error.message}`);
-      return null;
-    }
+    return await this.githubClient.getWorkflowRunId(buildBranch, 'success');
   }
 
   /**
@@ -85,18 +57,9 @@ export class ReleasePipeline extends ReleaseBasePipeline {
     this.log('info', `下载工作流运行 ${runId} 的产物...`);
     
     const artifactsDir = path.join(this.projectRoot, 'artifacts', `run-${runId}`);
-    if (!fs.existsSync(artifactsDir)) {
-      fs.mkdirSync(artifactsDir, { recursive: true });
-    }
-
-    try {
-      await exec.exec('gh', ['run', 'download', runId, '--dir', artifactsDir]);
-      this.log('info', `✅ 产物下载完成: ${artifactsDir}`);
-      return artifactsDir;
-    } catch (error: any) {
-      this.log('warning', `下载产物失败: ${error.message}`);
-      return null;
-    }
+    
+    const success = await this.githubClient.downloadArtifacts(runId, artifactsDir);
+    return success ? artifactsDir : null;
   }
 
   /**
@@ -126,20 +89,11 @@ export class ReleasePipeline extends ReleaseBasePipeline {
       collectFiles(artifactPath);
     }
 
-    // 构建 gh release create 命令
-    const args = ['release', 'create', `v${version}`, '--notes', releaseNotes];
-    if (files.length > 0) {
-      args.push(...files);
-    }
-
-    try {
-      await exec.exec('gh', args);
-      this.log('info', `✅ Release v${version} 创建成功！`);
-      return true;
-    } catch (error: any) {
-      this.log('error', `创建 Release 失败: ${error.message}`);
-      return false;
-    }
+    return await this.githubClient.createRelease(
+      `v${version}`,
+      releaseNotes,
+      files.length > 0 ? files : undefined
+    );
   }
 
   /**

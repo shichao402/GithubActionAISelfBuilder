@@ -32,6 +32,8 @@ jobs:
         id: pipeline
         run: node -e "const { ReleasePipeline } = require('./dist/src/pipelines/test/release-pipeline'); const pipeline = new ReleasePipeline(); pipeline.run().then(result => { if (!result.success) { process.exit(result.exitCode || 1); } }).catch(err => { console.error(err); process.exit(1); });"
         env:
+          # GITHUB_TOKEN 由 GitHub Actions 自动提供，@actions/github 会自动使用
+          # 本地环境需要设置 GH_TOKEN（通过 gh auth login）
           INPUT_VERSION: ${{ inputs.version || '' }}
           INPUT_RELEASE_NOTES: ${{ inputs.release-notes || '' }}
           INPUT_ARTIFACT_NAME: ${{ inputs.artifact-name || 'build-artifacts' }}

@@ -69,9 +69,16 @@ export class ReleaseBasePipeline extends BasePipeline {
   }
 
   /**
-   * 检查 GitHub CLI 是否可用
+   * 检查 GitHub CLI 是否可用（仅在本地环境需要）
+   * 
+   * 注意：在 GitHub Actions 环境中，会使用 @actions/github，不需要 GitHub CLI
    */
   protected async checkGhCli(): Promise<boolean> {
+    // 如果在 GitHub Actions 环境中，不需要检查 GitHub CLI
+    if (process.env.GITHUB_ACTIONS === 'true') {
+      return true;
+    }
+
     this.log('info', '检查 GitHub CLI...');
     const hasGhCli = await this.runCommand('gh --version', { silent: true });
     if (!hasGhCli) {
