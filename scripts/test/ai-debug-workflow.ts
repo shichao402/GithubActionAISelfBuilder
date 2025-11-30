@@ -13,14 +13,30 @@
  *   或
  *   npm run ai-debug -- <workflow-file> [ref]
  * 
- * 注意：此脚本仅用于测试本项目，不作为子项目提供
+ * 注意：此脚本可以共享给其他项目使用，用于调试 GitHub Actions 工作流
+ * 详细使用规则请参考: scripts/.cursor/rules/scripts-usage.mdc
  */
 
-import { WorkflowManager } from '../src/workflow-manager';
+import { WorkflowManager } from '../../src/workflow-manager';
 import * as fs from 'fs';
 import * as path from 'path';
 
-const projectRoot = path.resolve(__dirname, '..');
+// 支持作为子模块使用：检测是否在子模块目录中
+const scriptDir = __dirname;
+const possibleProjectRoots = [
+  path.resolve(scriptDir, '../..'),  // 从 scripts/test/ 到项目根
+  path.resolve(scriptDir, '../../..'), // 从父项目的子模块路径
+];
+
+// 查找包含 src/workflow-manager.ts 的目录作为项目根
+let projectRoot = process.cwd();
+for (const possibleRoot of possibleProjectRoots) {
+  const managerPath = path.join(possibleRoot, 'src', 'workflow-manager.ts');
+  if (fs.existsSync(managerPath)) {
+    projectRoot = possibleRoot;
+    break;
+  }
+}
 
 /**
  * 分析日志文件，提取错误信息
