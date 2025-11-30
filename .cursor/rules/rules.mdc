@@ -191,10 +191,14 @@ GithubActionAISelfBuilder/
 │   ├── debug-action/        # 调试 Action
 │   └── common/              # 通用 Actions
 ├── scripts/                 # 工具脚本
-│   ├── push-git.ts          # Git 推送脚本（TypeScript）
-│   ├── push-git.ps1         # Git 推送脚本（PowerShell）
-│   ├── push-git.sh          # Git 推送脚本（Shell）
-│   └── test-flutter-pipeline.ts
+│   ├── README.md            # 脚本目录说明
+│   ├── install-nodejs.ps1   # Node.js 安装脚本（可共享）
+│   └── ProjectOnly/         # 本项目特有的脚本（不共享）
+│       ├── push-git.ts      # Git 推送脚本（TypeScript）
+│       ├── push-git.ps1     # Git 推送脚本（PowerShell）
+│       ├── push-git.sh      # Git 推送脚本（Shell）
+│       ├── test-flutter-pipeline.ts
+│       └── ai-debug-workflow.ts
 ├── src/
 │   ├── base-pipeline.ts     # 流水线基类（核心）
 │   ├── scaffold.ts          # 脚手架生成器（核心）

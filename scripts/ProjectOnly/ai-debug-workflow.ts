@@ -9,12 +9,14 @@
  * 4. 分析日志并提供修正建议
  *
  * 用法:
- *   ts-node scripts/test/ai-debug-workflow.ts <workflow-file> [ref]
+ *   ts-node scripts/ProjectOnly/ai-debug-workflow.ts <workflow-file> [ref]
  *   或
  *   npm run ai-debug -- <workflow-file> [ref]
  * 
- * 注意：此脚本可以共享给其他项目使用，用于调试 GitHub Actions 工作流
- * 详细使用规则请参考: scripts/.cursor/rules/scripts-usage.mdc
+ * 注意：
+ * - 此脚本位于 ProjectOnly 目录，是本项目特有的
+ * - 但功能是通用的，可以复制到父项目使用
+ * - 详细使用规则请参考: .cursor/rules/scripts-usage.mdc
  */
 
 import { WorkflowManager } from '../../src/workflow-manager';
