@@ -202,7 +202,9 @@ async function generateWorkflow(
     const outputPath = path.join(workflowsDir, workflowFileName);
     
     // 尝试使用 npm 脚本，如果失败则直接使用 ts-node
-    let command = `npm run scaffold -- --pipeline ${pipelineName} --output ${outputPath}`;
+    // 如果文件已存在，添加 --update 参数
+    const updateFlag = fs.existsSync(outputPath) ? ' --update' : '';
+    let command = `npm run scaffold -- --pipeline ${pipelineName} --output ${outputPath}${updateFlag}`;
     
     // 检查是否有 scaffold 脚本
     const packageJsonPath = path.join(projectRoot, 'package.json');
@@ -212,7 +214,7 @@ async function generateWorkflow(
         // 如果没有 scaffold 脚本，直接使用 ts-node
         const scaffoldPath = path.join(projectRoot, 'src', 'scaffold.ts');
         if (fs.existsSync(scaffoldPath)) {
-          command = `ts-node ${scaffoldPath} --pipeline ${pipelineName} --output ${outputPath}`;
+          command = `ts-node ${scaffoldPath} --pipeline ${pipelineName} --output ${outputPath}${updateFlag}`;
         } else {
           // 尝试从子模块路径查找
           const possiblePaths = [
@@ -221,7 +223,7 @@ async function generateWorkflow(
           ];
           for (const scaffoldPath of possiblePaths) {
             if (fs.existsSync(scaffoldPath)) {
-              command = `ts-node ${scaffoldPath} --pipeline ${pipelineName} --output ${outputPath}`;
+              command = `ts-node ${scaffoldPath} --pipeline ${pipelineName} --output ${outputPath}${updateFlag}`;
               break;
             }
           }
