@@ -202,14 +202,19 @@ class GitHubActionsClient implements GitHubApiClient {
         token = core.getInput('token', { required: false });
       }
       
-      // 如果都没有，尝试使用 getOctokit() 不传参数（它会自动使用 GITHUB_TOKEN）
+      // 如果都没有，尝试从环境变量获取（GitHub Actions 自动提供）
+      // 注意：getOctokit() 不会自动从环境变量读取，需要显式传入
       if (!token) {
-        this.log('warning', '未找到 GITHUB_TOKEN，尝试使用默认 token');
-        // getOctokit() 不传参数时会自动使用 GITHUB_TOKEN
-        this.octokit = github.getOctokit();
-      } else {
-        this.octokit = github.getOctokit(token);
+        // GitHub Actions 会自动设置 GITHUB_TOKEN 环境变量
+        // 但 getOctokit() 需要显式传入，不能为空
+        token = process.env.GITHUB_TOKEN;
+        if (!token) {
+          throw new Error('GITHUB_TOKEN 环境变量未设置。在 GitHub Actions 中，GITHUB_TOKEN 应该自动可用。请检查 workflow 配置。');
+        }
       }
+      
+      // 必须传入 token，getOctokit() 不会自动从环境变量读取
+      this.octokit = github.getOctokit(token);
     } catch (error: any) {
       this.log('error', `初始化 GitHub API 客户端失败: ${error.message}`);
       this.log('error', `   提示：在 GitHub Actions 中，GITHUB_TOKEN 应该自动可用`);
