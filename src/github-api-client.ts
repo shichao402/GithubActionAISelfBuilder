@@ -180,40 +180,24 @@ class GitHubActionsClient implements GitHubApiClient {
     // 动态导入 @actions/github（仅在 GitHub Actions 环境中需要）
     try {
       const github = require('@actions/github');
-      const core = require('@actions/core');
       
-      // GitHub Actions 自动提供 GITHUB_TOKEN，但需要通过 github.token 获取
-      // process.env.GITHUB_TOKEN 可能不可用，使用 github.getOctokit() 会自动处理
-      // 如果显式需要 token，可以从 github.context.token 获取
-      let token: string | undefined;
+      // 在 GitHub Actions 环境中，GITHUB_TOKEN 应该自动可用作为环境变量
+      // @actions/github 的 getOctokit() 需要显式传入 token
+      // GitHub Actions 会自动设置 process.env.GITHUB_TOKEN
+      const token = process.env.GITHUB_TOKEN;
       
-      // GitHub Actions 自动提供 GITHUB_TOKEN，但需要通过环境变量访问
-      // 注意：github.context.token 可能不可用，优先使用环境变量
-      
-      // 方式 1: 从环境变量获取（GitHub Actions 自动提供）
-      token = process.env.GITHUB_TOKEN;
-      
-      // 方式 2: 从 github.context.token 获取（备用，但通常不可用）
-      if (!token && github.context.token) {
-        token = github.context.token;
-      }
-      
-      // 方式 3: 从 @actions/core input 获取（如果作为 input 传入）
       if (!token) {
-        token = core.getInput('token', { required: false });
+        // 如果 GITHUB_TOKEN 不可用，说明不在 GitHub Actions 环境中，或者环境配置有问题
+        // 这不应该发生，因为只有在检测到 GITHUB_ACTIONS=true 时才会使用这个客户端
+        throw new Error('GITHUB_TOKEN 环境变量未设置。在 GitHub Actions 中，GITHUB_TOKEN 应该自动可用。');
       }
       
-      // 如果都没有，说明 workflow 没有正确配置 GITHUB_TOKEN
-      if (!token) {
-        throw new Error('GITHUB_TOKEN 环境变量未设置。在 GitHub Actions 中，GITHUB_TOKEN 应该自动可用。如果问题持续，请在 workflow 文件中显式设置：env: { GITHUB_TOKEN: ${{ github.token }} }');
-      }
-      
-      // 必须传入 token，getOctokit() 不会自动从环境变量读取
+      // 使用 @actions/github 创建 octokit 实例
       this.octokit = github.getOctokit(token);
     } catch (error: any) {
       this.log('error', `初始化 GitHub API 客户端失败: ${error.message}`);
       this.log('error', `   提示：在 GitHub Actions 中，GITHUB_TOKEN 应该自动可用`);
-      this.log('error', `   如果问题持续，请检查 workflow 文件配置`);
+      this.log('error', `   如果问题持续，请检查是否在 GitHub Actions 环境中运行`);
       throw error;
     }
   }
