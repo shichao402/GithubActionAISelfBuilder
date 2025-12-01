@@ -92,7 +92,18 @@ class GitHubCliClient implements GitHubApiClient {
       const runId = output.trim();
       return runId && runId !== 'null' ? runId : null;
     } catch (error: any) {
-      this.log('warning' as const, `查询工作流运行失败: ${error.message}`);
+      const errorMessage = error.message || String(error);
+      
+      // 检查是否是认证错误
+      if (errorMessage.includes('authentication') || 
+          errorMessage.includes('GH_TOKEN') || 
+          errorMessage.includes('not logged in')) {
+        this.log('error' as const, `❌ GitHub CLI 认证失败`);
+        this.log('error' as const, `   请运行以下命令进行认证：`);
+        this.log('error' as const, `   gh auth login`);
+      } else {
+        this.log('warning' as const, `查询工作流运行失败: ${errorMessage}`);
+      }
       return null;
     }
   }
@@ -107,7 +118,18 @@ class GitHubCliClient implements GitHubApiClient {
       this.log('info' as const, `✅ 产物下载完成: ${targetDir}`);
       return true;
     } catch (error: any) {
-      this.log('warning' as const, `下载产物失败: ${error.message}`);
+      const errorMessage = error.message || String(error);
+      
+      // 检查是否是认证错误
+      if (errorMessage.includes('authentication') || 
+          errorMessage.includes('GH_TOKEN') || 
+          errorMessage.includes('not logged in')) {
+        this.log('error' as const, `❌ GitHub CLI 认证失败`);
+        this.log('error' as const, `   请运行以下命令进行认证：`);
+        this.log('error' as const, `   gh auth login`);
+      } else {
+        this.log('warning' as const, `下载产物失败: ${errorMessage}`);
+      }
       return false;
     }
   }
@@ -127,7 +149,19 @@ class GitHubCliClient implements GitHubApiClient {
       this.log('info' as const, `✅ Release ${tag} 创建成功！`);
       return true;
     } catch (error: any) {
-      this.log('error' as const, `创建 Release 失败: ${error.message}`);
+      const errorMessage = error.message || String(error);
+      
+      // 检查是否是认证错误
+      if (errorMessage.includes('authentication') || 
+          errorMessage.includes('GH_TOKEN') || 
+          errorMessage.includes('not logged in')) {
+        this.log('error' as const, `❌ GitHub CLI 认证失败`);
+        this.log('error' as const, `   请运行以下命令进行认证：`);
+        this.log('error' as const, `   gh auth login`);
+        this.log('error' as const, `   详细说明：https://cli.github.com/manual/gh_auth_login`);
+      } else {
+        this.log('error' as const, `创建 Release 失败: ${errorMessage}`);
+      }
       return false;
     }
   }
@@ -146,13 +180,40 @@ class GitHubActionsClient implements GitHubApiClient {
     // 动态导入 @actions/github（仅在 GitHub Actions 环境中需要）
     try {
       const github = require('@actions/github');
-      const token = process.env.GITHUB_TOKEN;
-      if (!token) {
-        throw new Error('GITHUB_TOKEN 环境变量未设置');
+      const core = require('@actions/core');
+      
+      // GitHub Actions 自动提供 GITHUB_TOKEN，但需要通过 github.token 获取
+      // process.env.GITHUB_TOKEN 可能不可用，使用 github.getOctokit() 会自动处理
+      // 如果显式需要 token，可以从 github.context.token 获取
+      let token: string | undefined;
+      
+      // 方式 1: 从 github.context.token 获取（GitHub Actions 自动提供）
+      if (github.context.token) {
+        token = github.context.token;
       }
-      this.octokit = github.getOctokit(token);
+      
+      // 方式 2: 从环境变量获取（备用）
+      if (!token) {
+        token = process.env.GITHUB_TOKEN;
+      }
+      
+      // 方式 3: 从 @actions/core input 获取（如果作为 input 传入）
+      if (!token) {
+        token = core.getInput('token', { required: false });
+      }
+      
+      // 如果都没有，尝试使用 getOctokit() 不传参数（它会自动使用 GITHUB_TOKEN）
+      if (!token) {
+        this.log('warning', '未找到 GITHUB_TOKEN，尝试使用默认 token');
+        // getOctokit() 不传参数时会自动使用 GITHUB_TOKEN
+        this.octokit = github.getOctokit();
+      } else {
+        this.octokit = github.getOctokit(token);
+      }
     } catch (error: any) {
       this.log('error', `初始化 GitHub API 客户端失败: ${error.message}`);
+      this.log('error', `   提示：在 GitHub Actions 中，GITHUB_TOKEN 应该自动可用`);
+      this.log('error', `   如果问题持续，请检查 workflow 文件配置`);
       throw error;
     }
   }

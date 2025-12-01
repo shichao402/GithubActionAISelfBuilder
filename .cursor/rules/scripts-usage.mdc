@@ -186,6 +186,35 @@ cp <子模块路径>/scripts/ProjectOnly/ai-debug-workflow.ts scripts/
 
 ## AI 助手行为规则
 
+### 在线 Workflow 测试规则
+
+当需要测试在线流水线时：
+
+1. **必须先推送代码**
+   - ✅ 在线 workflow 测试需要代码在远程仓库中
+   - ✅ 必须使用 `npm run push [提交信息]` 推送代码（使用项目提供的一键推送脚本）
+   - ✅ 推送完成后才能触发在线 workflow 测试
+   - ❌ **禁止在未推送代码的情况下测试在线 workflow**
+   - ❌ **禁止修改代码后不推送就触发 workflow**
+
+2. **标准测试流程**:
+   ```bash
+   # 1. 修复代码后，先推送
+   npm run push "fix: 修复 GITHUB_TOKEN 获取问题"
+   
+   # 2. 等待推送完成（确保代码已同步到远程仓库）
+   
+   # 3. 然后触发在线测试
+   npm run test:pipelines -- --pipeline ReleasePipeline --trigger --watch
+   # 或使用 AI 调试脚本
+   npm run ai-debug -- .github/workflows/release.yml main
+   ```
+
+3. **为什么必须先推送**:
+   - GitHub Actions 从远程仓库拉取代码执行
+   - 本地修改的代码不会自动同步到 workflow 执行环境
+   - 只有推送到远程仓库后，workflow 才能使用最新代码
+
 ### Pipeline 验证和调试
 
 当父项目需要验证或调试 Pipeline 时：
@@ -203,13 +232,18 @@ cp <子模块路径>/scripts/ProjectOnly/ai-debug-workflow.ts scripts/
    # 2. 验证生成的 workflow 文件
    npm run test:pipelines -- --all --verify
    
-   # 3. 触发在线测试并监控
+   # 3. 推送代码（必须步骤）
+   npm run push "test: 更新 workflow 配置"
+   
+   # 4. 触发在线测试并监控
    npm run test:pipelines -- --all --trigger --watch
    ```
 
 3. **禁止的操作**:
    - ❌ 手动删除和重新生成 workflow 文件
    - ❌ 不验证就推送代码
+   - ❌ **未推送代码就测试在线 workflow**
+   - ❌ **修改代码后不推送就触发 workflow**
    - ❌ 不触发在线测试就认为 workflow 正确
 
 ### GitHub Action 工作流调试
@@ -221,13 +255,17 @@ cp <子模块路径>/scripts/ProjectOnly/ai-debug-workflow.ts scripts/
    - 禁止手动分析或猜测错误原因
 
 2. **遵循调试流程**:
+   - **先推送代码**（如果修改了代码）
    - 触发工作流
    - 监控执行状态
    - 收集失败日志
    - 分析错误并修正
+   - **推送修正后的代码**
    - 重新验证
 
 3. **禁止的操作**:
+   - ❌ **未推送代码就触发 workflow 测试**
+   - ❌ **修改代码后不推送就触发 workflow**
    - ❌ 不收集日志就猜测错误原因
    - ❌ 手动查看 GitHub 网页界面分析错误（除非无法使用脚本）
    - ❌ 不验证修正就推送代码
@@ -262,17 +300,23 @@ gh run view <run-id> --log-failed
 ### 工作流调试流程
 
 ```bash
-# 1. 触发并监控工作流
+# 1. 如果修改了代码，先推送
+npm run push "fix: 修复 workflow 问题"
+
+# 2. 触发并监控工作流
 npm run ai-debug -- .github/workflows/build.yml main
 
-# 2. 如果失败，脚本会自动：
+# 3. 如果失败，脚本会自动：
 #    - 收集错误日志
 #    - 分析错误原因
 #    - 提供修正建议
 
-# 3. 根据建议修正工作流或代码
+# 4. 根据建议修正工作流或代码
 
-# 4. 重新触发验证
+# 5. 推送修正后的代码
+npm run push "fix: 应用修正建议"
+
+# 6. 重新触发验证
 npm run ai-debug -- .github/workflows/build.yml main
 ```
 
@@ -296,5 +340,6 @@ npm run ai-debug -- .github/workflows/build.yml main
 
 ## 更新日志
 
+- 2025-12-01: 添加在线 Workflow 测试前必须先推送代码的规则
 - 2025-12-01: 添加 Pipeline 验证和调试脚本规则
 - 2025-11-30: 初始版本，包含 Git 推送和 AI 调试脚本规则

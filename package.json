@@ -12,6 +12,7 @@
     "format": "prettier --write \"**/*.{ts,json,md}\"",
     "scaffold": "ts-node src/scaffold.ts",
     "test:flutter": "ts-node scripts/ProjectOnly/test-flutter-pipeline.ts",
+    "pipeline": "ts-node scripts/run-pipeline.ts",
     "act:build": "act -j build",
     "act:release": "act -j release",
     "act:list": "act -l",

@@ -18,7 +18,6 @@
  * - 详细使用规则请参考: .cursor/rules/scripts-usage.mdc
  */
 
-import { WorkflowManager } from '../../src/workflow-manager';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -32,14 +31,34 @@ const possibleProjectRoots = [
   path.resolve(process.cwd(), 'GithubActionAISelfBuilder'), // 父项目根目录下的子模块
 ];
 
-// 查找包含 src/workflow-manager.ts 的目录作为项目根
+// 查找包含 src/workflow-manager.ts 或 dist/src/workflow-manager.js 的目录作为项目根
 let projectRoot = process.cwd();
+let WorkflowManager: any;
 for (const possibleRoot of possibleProjectRoots) {
-  const managerPath = path.join(possibleRoot, 'src', 'workflow-manager.ts');
-  if (fs.existsSync(managerPath)) {
+  const managerTsPath = path.join(possibleRoot, 'src', 'workflow-manager.ts');
+  const managerJsPath = path.join(possibleRoot, 'dist', 'src', 'workflow-manager.js');
+  
+  if (fs.existsSync(managerTsPath)) {
     projectRoot = possibleRoot;
+    // 尝试导入 TypeScript 源文件
+    try {
+      WorkflowManager = require(path.join(possibleRoot, 'src', 'workflow-manager')).WorkflowManager;
+      break;
+    } catch {
+      // 如果失败，尝试使用编译后的文件
+    }
+  }
+  
+  if (fs.existsSync(managerJsPath)) {
+    projectRoot = possibleRoot;
+    // 使用编译后的 JavaScript 文件
+    WorkflowManager = require(managerJsPath).WorkflowManager;
     break;
   }
+}
+
+if (!WorkflowManager) {
+  throw new Error('无法找到 WorkflowManager，请确保已运行 npm run build');
 }
 
 /**

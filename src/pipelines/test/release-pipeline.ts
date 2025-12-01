@@ -17,9 +17,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 export class ReleasePipeline extends ReleaseBasePipeline {
-  private githubClient = createGitHubApiClient(
-    (level: 'info' | 'warning' | 'error' | 'debug', message: string) => this.log(level, message)
-  );
+  // githubClient 已在父类中定义，无需重复定义
 
   /**
    * 定义工作流输入参数（继承自 ReleaseBasePipeline）

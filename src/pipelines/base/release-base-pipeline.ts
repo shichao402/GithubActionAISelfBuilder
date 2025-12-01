@@ -12,10 +12,25 @@
 
 import { BasePipeline, PipelineResult } from '../../base-pipeline';
 import { createWorkflowConfig } from '../../workflow-config';
+import { createGitHubApiClient } from '../../github-api-client';
 import * as fs from 'fs';
 import * as path from 'path';
 
 export class ReleaseBasePipeline extends BasePipeline {
+  protected githubClient: ReturnType<typeof createGitHubApiClient>;
+
+  constructor(
+    inputs: Record<string, any> = {},
+    configFile?: string,
+    projectRoot?: string
+  ) {
+    super(inputs, configFile, projectRoot);
+    // 延迟初始化，确保在构造函数完成后才初始化（此时环境变量已设置）
+    this.githubClient = createGitHubApiClient(
+      (level: 'info' | 'warning' | 'error' | 'debug', message: string) => this.log(level, message)
+    );
+  }
+
   /**
    * 定义工作流输入参数
    */
@@ -69,23 +84,42 @@ export class ReleaseBasePipeline extends BasePipeline {
   }
 
   /**
-   * 检查 GitHub CLI 是否可用（仅在本地环境需要）
+   * 检查认证状态
    * 
-   * 注意：在 GitHub Actions 环境中，会使用 @actions/github，不需要 GitHub CLI
+   * - GitHub Actions 环境：自动使用 GITHUB_TOKEN，无需检查
+   * - 本地环境：检查 GitHub CLI 是否已认证
    */
-  protected async checkGhCli(): Promise<boolean> {
-    // 如果在 GitHub Actions 环境中，不需要检查 GitHub CLI
+  protected async checkAuthentication(): Promise<boolean> {
+    // 如果在 GitHub Actions 环境中，自动使用 GITHUB_TOKEN
     if (process.env.GITHUB_ACTIONS === 'true') {
+      this.log('info', '检测到 GitHub Actions 环境，自动使用 GITHUB_TOKEN');
       return true;
     }
 
-    this.log('info', '检查 GitHub CLI...');
+    // 本地环境：检查 GitHub CLI 是否已安装和认证
+    this.log('info', '检测到本地环境，检查 GitHub CLI 认证状态...');
+    
+    // 检查是否安装
     const hasGhCli = await this.runCommand('gh --version', { silent: true });
     if (!hasGhCli) {
-      this.log('error', '未安装 GitHub CLI (gh)，请先安装：https://cli.github.com/');
+      this.log('error', '❌ 未安装 GitHub CLI (gh)');
+      this.log('error', '   请先安装：https://cli.github.com/');
+      this.log('error', '   macOS: brew install gh');
+      this.log('error', '   Linux: 参考 https://cli.github.com/manual/installation');
       return false;
     }
-    this.log('info', '✅ GitHub CLI 已就绪');
+
+    // 检查是否已认证
+    const authStatus = await this.runCommand('gh auth status', { silent: true });
+    if (!authStatus) {
+      this.log('error', '❌ GitHub CLI 未认证');
+      this.log('error', '   请运行以下命令进行认证：');
+      this.log('error', '   gh auth login');
+      this.log('error', '   详细说明：https://cli.github.com/manual/gh_auth_login');
+      return false;
+    }
+
+    this.log('info', '✅ GitHub CLI 已就绪并已认证');
     return true;
   }
 
@@ -99,13 +133,19 @@ export class ReleaseBasePipeline extends BasePipeline {
 
     this.log('info', `查询分支 ${buildBranch} 的工作流运行...`);
     
-    // 使用 gh CLI 查询
-    // 注意：这里简化处理，实际应该解析输出
-    // 子类可以覆盖此方法实现更复杂的逻辑
-    const queryCommand = `gh run list --branch ${buildBranch} --status success --limit 1 --json databaseId --jq ".[0].databaseId"`;
-    
-    // 暂时返回 null，子类可以实现具体逻辑
-    return null;
+    try {
+      // 使用 GitHub API 客户端（自动根据环境选择实现）
+      const runId = await this.githubClient.getWorkflowRunId(buildBranch, 'success');
+      if (runId) {
+        this.log('info', `✅ 找到工作流运行: ${runId}`);
+      } else {
+        this.log('warning', `未找到分支 ${buildBranch} 的成功工作流运行`);
+      }
+      return runId;
+    } catch (error: any) {
+      this.log('warning', `查询工作流运行失败: ${error.message}`);
+      return null;
+    }
   }
 
   /**
@@ -124,22 +164,22 @@ export class ReleaseBasePipeline extends BasePipeline {
 
     this.log('info', `下载工作流运行 ${runId} 的产物...`);
     
-    // 使用 gh CLI 下载
+    // 使用 GitHub API 客户端（自动根据环境选择实现）
     const artifactsDir = path.join(this.projectRoot, 'artifacts', `run-${runId}`);
     if (!fs.existsSync(artifactsDir)) {
       fs.mkdirSync(artifactsDir, { recursive: true });
     }
 
-    const downloadSuccess = await this.runCommand(
-      `gh run download ${runId} --dir ${artifactsDir}`
-    );
-
-    if (downloadSuccess) {
-      this.log('info', `✅ 产物下载完成: ${artifactsDir}`);
-      return artifactsDir;
+    try {
+      const success = await this.githubClient.downloadArtifacts(runId, artifactsDir);
+      if (success) {
+        return artifactsDir;
+      }
+      return null;
+    } catch (error: any) {
+      this.log('warning', `下载产物失败: ${error.message}`);
+      return null;
     }
-
-    return null;
   }
 
   /**
@@ -152,19 +192,55 @@ export class ReleaseBasePipeline extends BasePipeline {
   ): Promise<boolean> {
     this.log('info', `创建 GitHub Release v${version}...`);
 
-    // 构建 gh release create 命令
-    const releaseCommand = `gh release create v${version} --notes "${releaseNotes}"`;
-    
-    // 如果有产物路径，添加文件（简化处理，实际应该收集文件列表）
-    // 子类可以覆盖此方法实现更复杂的逻辑
+    try {
+      // 收集要上传的文件（如果有产物路径）
+      const files: string[] = [];
+      if (artifactPath && fs.existsSync(artifactPath)) {
+        // 简化处理：如果是目录，收集所有文件
+        // 子类可以覆盖此方法实现更复杂的逻辑
+        const collectFiles = (dir: string): void => {
+          const entries = fs.readdirSync(dir, { withFileTypes: true });
+          for (const entry of entries) {
+            const fullPath = path.join(dir, entry.name);
+            if (entry.isFile()) {
+              files.push(fullPath);
+            } else if (entry.isDirectory()) {
+              collectFiles(fullPath);
+            }
+          }
+        };
+        collectFiles(artifactPath);
+      }
 
-    const success = await this.runCommand(releaseCommand);
-    if (success) {
-      this.log('info', `✅ Release v${version} 创建成功！`);
-      return true;
+      // 使用 GitHub API 客户端（自动根据环境选择实现）
+      const success = await this.githubClient.createRelease(
+        `v${version}`,
+        releaseNotes || `Release ${version}`,
+        files.length > 0 ? files : undefined
+      );
+
+      if (success) {
+        return true;
+      }
+
+      return false;
+    } catch (error: any) {
+      this.log('error', `创建 Release 失败: ${error.message}`);
+      
+      // 如果是认证错误，给出更清晰的提示
+      if (error.message.includes('authentication') || error.message.includes('token')) {
+        if (process.env.GITHUB_ACTIONS === 'true') {
+          this.log('error', '❌ GitHub Actions 环境中 GITHUB_TOKEN 不可用');
+          this.log('error', '   这通常不应该发生，请检查 workflow 配置');
+        } else {
+          this.log('error', '❌ GitHub CLI 认证失败');
+          this.log('error', '   请运行以下命令重新认证：');
+          this.log('error', '   gh auth login');
+        }
+      }
+      
+      return false;
     }
-
-    return false;
   }
 
   /**
@@ -187,11 +263,11 @@ export class ReleaseBasePipeline extends BasePipeline {
 
       this.log('info', `开始发布流程 v${version}...`);
 
-      // 1. 检查 gh CLI
-      if (!(await this.checkGhCli())) {
+      // 1. 检查认证状态
+      if (!(await this.checkAuthentication())) {
         return {
           success: false,
-          message: '未安装 GitHub CLI (gh)，请先安装：https://cli.github.com/',
+          message: '认证检查失败，请根据上述提示进行修复',
           exitCode: 1,
         };
       }
