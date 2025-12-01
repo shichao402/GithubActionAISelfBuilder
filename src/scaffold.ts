@@ -284,10 +284,52 @@ export class ScaffoldGenerator {
   }
 
   /**
+   * 检查 Pipeline 类是否是基类（不应该生成独立的 workflow）
+   * 
+   * 基类的特征：
+   * 1. 类名以 "Base" 结尾（如 ReleaseBasePipeline, BuildPipeline）
+   * 2. 位于 base/ 目录下
+   * 3. 通常被其他类继承，而不是直接使用
+   */
+  private isBasePipeline(PipelineClass: typeof BasePipeline): boolean {
+    const className = PipelineClass.name;
+    
+    // 检查类名是否以 "Base" 结尾或包含 "Base"
+    if (className.endsWith('BasePipeline') || className === 'BasePipeline') {
+      return true;
+    }
+    
+    // 检查是否继承自已知的基类（如 BuildPipeline, ReleaseBasePipeline）
+    // 这些基类不应该生成独立的 workflow
+    const knownBaseClasses = ['BuildPipeline', 'ReleaseBasePipeline'];
+    if (knownBaseClasses.includes(className)) {
+      return true;
+    }
+    
+    // 检查模块路径是否在 base/ 目录下
+    const registry = getPipelineRegistry();
+    const metadata = registry.getMetadata(className);
+    if (metadata?.modulePath && metadata.modulePath.startsWith('base/')) {
+      return true;
+    }
+    
+    return false;
+  }
+
+  /**
    * 分析 Pipeline 类
    */
   analyzePipeline(PipelineClass: typeof BasePipeline): ScaffoldPipelineMetadata {
     const className = PipelineClass.name;
+    
+    // 检查是否是基类，如果是则抛出错误
+    if (this.isBasePipeline(PipelineClass)) {
+      throw new Error(
+        `Pipeline 类 ${className} 是基类，不应该生成独立的 workflow 配置。` +
+        `基类应该被其他 Pipeline 类继承，只有具体的实现类才应该生成 workflow。`
+      );
+    }
+    
     const description = PipelineClass.prototype.constructor.toString().match(/\/\*\*([\s\S]*?)\*\//)?.[1] || `${className} pipeline`;
 
     // 从静态方法获取配置

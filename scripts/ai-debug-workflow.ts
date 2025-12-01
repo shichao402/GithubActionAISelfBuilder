@@ -148,23 +148,47 @@ async function main() {
     console.error('❌ 错误: 请指定工作流文件');
     console.error('');
     console.error('用法:');
-    console.error('  ts-node scripts/ai-debug-workflow.ts <workflow-file> [ref]');
+    console.error('  ts-node scripts/ai-debug-workflow.ts <workflow-file> [ref] [-f key=value ...]');
     console.error('  或');
-    console.error('  npm run ai-debug -- <workflow-file> [ref]');
+    console.error('  npm run ai-debug -- <workflow-file> [ref] [-f key=value ...]');
     console.error('');
     console.error('示例:');
     console.error('  npm run ai-debug -- .github/workflows/flutter-build.yml');
     console.error('  npm run ai-debug -- .github/workflows/flutter-build.yml main');
+    console.error('  npm run ai-debug -- .github/workflows/release.yml main -f version=1.0.0 -f release-notes="Release notes"');
     process.exit(1);
   }
 
   const workflowFile = args[0];
   const ref = args[1] || 'main';
+  
+  // 解析 inputs（支持 -f key=value 格式）
+  const inputs: Record<string, string> = {};
+  let i = 2;
+  while (i < args.length) {
+    if (args[i] === '-f' && i + 1 < args.length) {
+      const inputPair = args[i + 1];
+      const [key, ...valueParts] = inputPair.split('=');
+      if (key && valueParts.length > 0) {
+        inputs[key] = valueParts.join('='); // 支持值中包含 = 的情况
+      }
+      i += 2;
+    } else {
+      i++;
+    }
+  }
 
   console.log('🤖 AI 自我调试 GitHub Actions Workflow');
   console.log('==========================================\n');
   console.log(`📋 工作流文件: ${workflowFile}`);
-  console.log(`🌿 分支/引用: ${ref}\n`);
+  console.log(`🌿 分支/引用: ${ref}`);
+  if (Object.keys(inputs).length > 0) {
+    console.log(`📥 输入参数:`);
+    for (const [key, value] of Object.entries(inputs)) {
+      console.log(`   ${key}: ${value}`);
+    }
+  }
+  console.log('');
 
   // 检查工作流文件是否存在
   const workflowPath = path.join(projectRoot, workflowFile);
@@ -194,6 +218,7 @@ async function main() {
   console.log('🚀 开始触发并监控工作流...\n');
   const result = await manager.runWorkflow(workflowFile, {
     ref,
+    inputs: Object.keys(inputs).length > 0 ? inputs : undefined,
     pollInterval: 5,
   });
 

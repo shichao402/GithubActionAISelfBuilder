@@ -241,3 +241,8 @@ GithubActionAISelfBuilder/
 7. **文档更新**: 提醒用户更新相关文档
 8. **Git 推送规范**: **必须使用项目提供的一键推送脚本**
 9. **GitHub Action 调试规范**: **必须使用项目提供的 AI 自我调试脚本**
+   - ✅ **必须使用** `npm run ai-debug -- <workflow-file> [ref] [-f key=value ...]`
+   - ❌ **严格禁止**手动运行 `gh workflow run` 命令
+   - ❌ **严格禁止**使用复杂的命令行拼接（如 `gh workflow run ... && sleep ... && node -e "..."`）
+   - ❌ **严格禁止**手动使用 `WorkflowManager` 类而不通过脚本
+   - 详细规则请参考: `.cursor/rules/scripts-usage.mdc`

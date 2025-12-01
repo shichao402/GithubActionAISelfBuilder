@@ -251,21 +251,44 @@ cp <子模块路径>/scripts/ProjectOnly/ai-debug-workflow.ts scripts/
 当父项目需要调试 GitHub Action 工作流时：
 
 1. **必须使用本项目提供的 AI 调试脚本**
-   - 使用 `npm run ai-debug` 或 `scripts/ai-debug-workflow.ts`
-   - 禁止手动分析或猜测错误原因
+   - ✅ **必须使用** `npm run ai-debug` 或 `scripts/ai-debug-workflow.ts`
+   - ❌ **严格禁止**手动运行 `gh workflow run` 或复杂的命令行拼接
+   - ❌ **严格禁止**手动分析或猜测错误原因
+   - ❌ **严格禁止**使用复杂的 node -e 命令来监控 workflow
 
-2. **遵循调试流程**:
-   - **先推送代码**（如果修改了代码）
-   - 触发工作流
-   - 监控执行状态
-   - 收集失败日志
-   - 分析错误并修正
-   - **推送修正后的代码**
-   - 重新验证
+2. **标准调试流程**:
+   ```bash
+   # 1. 如果修改了代码，先推送
+   npm run push "fix: 修复问题"
+   
+   # 2. 使用 AI 调试脚本触发并监控 workflow
+   # 基本用法（无 inputs）
+   npm run ai-debug -- .github/workflows/build.yml main
+   
+   # 带 inputs 的用法
+   npm run ai-debug -- .github/workflows/release.yml main -f version=1.0.0 -f release-notes="Release notes"
+   
+   # 3. 脚本会自动：
+   #    - 触发 workflow
+   #    - 监控执行状态
+   #    - 收集失败日志
+   #    - 分析错误并提供建议
+   
+   # 4. 根据建议修正代码
+   
+   # 5. 推送修正后的代码
+   npm run push "fix: 应用修正建议"
+   
+   # 6. 重新验证
+   npm run ai-debug -- .github/workflows/release.yml main -f version=1.0.1
+   ```
 
 3. **禁止的操作**:
    - ❌ **未推送代码就触发 workflow 测试**
    - ❌ **修改代码后不推送就触发 workflow**
+   - ❌ **手动运行 `gh workflow run` 命令**
+   - ❌ **使用复杂的命令行拼接（如 `gh workflow run ... && sleep ... && node -e "..."`）**
+   - ❌ **手动使用 `WorkflowManager` 类而不通过脚本**
    - ❌ 不收集日志就猜测错误原因
    - ❌ 手动查看 GitHub 网页界面分析错误（除非无法使用脚本）
    - ❌ 不验证修正就推送代码
