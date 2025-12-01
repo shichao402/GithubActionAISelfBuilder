@@ -187,14 +187,15 @@ class GitHubActionsClient implements GitHubApiClient {
       // 如果显式需要 token，可以从 github.context.token 获取
       let token: string | undefined;
       
-      // 方式 1: 从 github.context.token 获取（GitHub Actions 自动提供）
-      if (github.context.token) {
-        token = github.context.token;
-      }
+      // GitHub Actions 自动提供 GITHUB_TOKEN，但需要通过环境变量访问
+      // 注意：github.context.token 可能不可用，优先使用环境变量
       
-      // 方式 2: 从环境变量获取（备用）
-      if (!token) {
-        token = process.env.GITHUB_TOKEN;
+      // 方式 1: 从环境变量获取（GitHub Actions 自动提供）
+      token = process.env.GITHUB_TOKEN;
+      
+      // 方式 2: 从 github.context.token 获取（备用，但通常不可用）
+      if (!token && github.context.token) {
+        token = github.context.token;
       }
       
       // 方式 3: 从 @actions/core input 获取（如果作为 input 传入）
@@ -202,15 +203,9 @@ class GitHubActionsClient implements GitHubApiClient {
         token = core.getInput('token', { required: false });
       }
       
-      // 如果都没有，尝试从环境变量获取（GitHub Actions 自动提供）
-      // 注意：getOctokit() 不会自动从环境变量读取，需要显式传入
+      // 如果都没有，说明 workflow 没有正确配置 GITHUB_TOKEN
       if (!token) {
-        // GitHub Actions 会自动设置 GITHUB_TOKEN 环境变量
-        // 但 getOctokit() 需要显式传入，不能为空
-        token = process.env.GITHUB_TOKEN;
-        if (!token) {
-          throw new Error('GITHUB_TOKEN 环境变量未设置。在 GitHub Actions 中，GITHUB_TOKEN 应该自动可用。请检查 workflow 配置。');
-        }
+        throw new Error('GITHUB_TOKEN 环境变量未设置。在 GitHub Actions 中，GITHUB_TOKEN 应该自动可用。如果问题持续，请在 workflow 文件中显式设置：env: { GITHUB_TOKEN: ${{ github.token }} }');
       }
       
       // 必须传入 token，getOctokit() 不会自动从环境变量读取
