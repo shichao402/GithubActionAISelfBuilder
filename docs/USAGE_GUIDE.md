@@ -22,17 +22,17 @@ git submodule add https://github.com/shichao402/GithubActionAISelfBuilder.git To
 git submodule update --init --recursive
 ```
 
-#### 步骤 2: 安装依赖
+#### 步骤 2: 设置 Python 环境
 
 ```bash
 # 进入子模块目录
-cd Tools/GithubActionAISelfBuilder
+cd Tools/GithubActionAISelfBuilder/python
 
-# 安装依赖
-npm install
+# 创建 Conda 环境
+conda env create -f environment.yml
 
-# 构建项目
-npm run build
+# 激活环境
+conda activate github-action-builder
 ```
 
 #### 步骤 3: 在父项目中创建 Pipeline
@@ -44,90 +44,84 @@ npm run build
 mkdir -p src/pipelines
 ```
 
-创建您的第一个 Pipeline 文件 `src/pipelines/my-build-pipeline.ts`：
+创建您的第一个 Pipeline 文件 `src/pipelines/my_build_pipeline.py`：
 
-```typescript
-// 根据实际路径调整导入（假设子模块在 Tools/GithubActionAISelfBuilder）
-import { BasePipeline, PipelineResult } from '../../Tools/GithubActionAISelfBuilder/src/base-pipeline';
-import { createWorkflowConfig } from '../../Tools/GithubActionAISelfBuilder/src/workflow-config';
+```python
+# 根据实际路径调整导入（假设子模块在 Tools/GithubActionAISelfBuilder）
+import sys
+from pathlib import Path
 
-export class MyBuildPipeline extends BasePipeline {
-  /**
-   * 定义工作流输入参数
-   */
-  static getWorkflowInputs() {
-    const config = createWorkflowConfig();
-    config.addInput('build-command', '构建命令', false, 'npm run build');
-    return config.toDict().inputs || {};
-  }
+# 添加子模块路径
+sys.path.insert(0, str(Path(__file__).parent.parent.parent / "Tools" / "GithubActionAISelfBuilder" / "python"))
 
-  /**
-   * 定义准备阶段配置
-   */
-  static getWorkflowSetup() {
-    const config = createWorkflowConfig();
-    config.setupNode('18', 'npm');
-    return config.toDict().setup || {};
-  }
+from src.base_pipeline import BasePipeline, PipelineResult
+from src.workflow_config import create_workflow_config
 
-  /**
-   * 定义触发条件
-   */
-  static getWorkflowTriggers() {
-    const config = createWorkflowConfig();
-    config.onPush(['main', 'develop']);
-    config.onPullRequest(['main']);
-    return config.toDict().triggers || {};
-  }
-
-  /**
-   * 定义运行环境
-   */
-  static getWorkflowRunsOn(): string {
-    return 'ubuntu-latest';
-  }
-
-  /**
-   * 实现执行逻辑
-   */
-  async execute(): Promise<PipelineResult> {
-    try {
-      const buildCommand = this.getInput('build-command') || 'npm run build';
-      
-      this.log('info', `开始执行构建: ${buildCommand}`);
-      
-      const success = await this.runCommand(buildCommand);
-      
-      if (!success) {
-        return {
-          success: false,
-          message: '构建失败',
-          exitCode: 1,
-        };
-      }
-
-      return {
-        success: true,
-        message: '构建成功',
-        exitCode: 0,
-      };
-    } catch (error: any) {
-      return {
-        success: false,
-        message: `执行过程中发生错误: ${error.message}`,
-        exitCode: 1,
-      };
-    }
-  }
-}
+class MyBuildPipeline(BasePipeline):
+    """构建 Pipeline"""
+    
+    @staticmethod
+    def get_workflow_inputs():
+        """定义工作流输入参数"""
+        config = create_workflow_config()
+        config.add_input("build-command", "构建命令", False, "npm run build")
+        return config.to_dict().get("inputs", {})
+    
+    @staticmethod
+    def get_workflow_setup():
+        """定义准备阶段配置"""
+        config = create_workflow_config()
+        config.setup_node("18", "npm")
+        return config.to_dict().get("setup", {})
+    
+    @staticmethod
+    def get_workflow_triggers():
+        """定义触发条件"""
+        config = create_workflow_config()
+        config.on_push(["main", "develop"])
+        config.on_pull_request(["main"])
+        return config.to_dict().get("triggers", {})
+    
+    @staticmethod
+    def get_workflow_runs_on():
+        """定义运行环境"""
+        return "ubuntu-latest"
+    
+    def execute(self) -> PipelineResult:
+        """实现执行逻辑"""
+        try:
+            build_command = self.get_input("build-command", "npm run build")
+            
+            self.log("info", f"开始执行构建: {build_command}")
+            
+            success = self.run_command(build_command)
+            
+            if not success:
+                return PipelineResult(
+                    success=False,
+                    message="构建失败",
+                    exit_code=1
+                )
+            
+            return PipelineResult(
+                success=True,
+                message="构建成功",
+                exit_code=0
+            )
+        except Exception as e:
+            return PipelineResult(
+                success=False,
+                message=f"执行过程中发生错误: {str(e)}",
+                exit_code=1
+            )
 ```
 
 #### 步骤 4: 生成 GitHub Action Workflow
 
 ```bash
 # 在父项目根目录执行
-cd Tools/GithubActionAISelfBuilder
-npm run scaffold -- --pipeline MyBuildPipeline --output ../../.github/workflows/my-build.yml
+cd Tools/GithubActionAISelfBuilder/python
+python -m src.scaffold --pipeline MyBuildPipeline --output ../../.github/workflows/my-build.yml
 ```
 
 #### 步骤 5: 提交并推送
@@ -137,7 +131,7 @@ npm run scaffold -- --pipeline MyBuildPipeline --output ../../.github/workflows/
 cd ../..
 
 # 提交生成的文件
-git add .github/workflows/my-build.yml src/pipelines/my-build-pipeline.ts
+git add .github/workflows/my-build.yml src/pipelines/my_build_pipeline.py
 git commit -m "feat: 添加构建 Pipeline 和工作流"
 git push
 ```
@@ -148,10 +142,61 @@ git push
 
 ```bash
 git clone https://github.com/shichao402/GithubActionAISelfBuilder.git
-cd GithubActionAISelfBuilder
-npm install
-npm run build
+cd GithubActionAISelfBuilder/python
+conda env create -f environment.yml
+conda activate github-action-builder
 ```
+
+## 🎯 最佳实践
+
+### 使用 Python Pipeline（推荐）⭐⭐⭐
+
+**核心思想**：使用 Python + Conda 管理环境，享受类型注解（mypy）和简单直接的使用方式。
+
+#### 工作流程
+
+1. **在父项目中创建 Pipeline**（Python，类型注解）
+   ```python
+   # src/pipelines/my_pipeline.py
+   from src.base_pipeline import BasePipeline, PipelineResult
+   # ... 实现代码（享受类型注解）
+   ```
+
+2. **使用 Conda 管理环境**（固化运行环境）
+   ```bash
+   conda env create -f Tools/GithubActionAISelfBuilder/python/environment.yml
+   conda activate github-action-builder
+   ```
+
+3. **生成的 workflow 直接使用 Python**（不需要编译步骤）
+
+**优势**：
+- ✅ **类型安全**：使用 Python 类型注解 + mypy 进行类型检查
+- ✅ **简单使用**：Python 直接运行，不需要编译步骤
+- ✅ **环境管理**：Conda 固化运行环境，确保一致性
+- ✅ **快速执行**：workflow 中不需要编译步骤，执行更快
+
+### 使用临时目录（备选方案）
+
+如果需要在父项目中自定义 Pipeline，可以使用临时目录：
+
+1. **创建临时目录**：
+   ```bash
+   mkdir -p .github-action-builder/pipelines
+   ```
+
+2. **配置 `config.yaml`**：
+   ```yaml
+   pipelines:
+     scripts_dir: ".github-action-builder/pipelines"
+   ```
+
+3. **添加到 `.gitignore`**（可选）：
+   ```
+   .github-action-builder/
+   ```
+
+**注意**：使用临时目录时，父项目需要安装 Node.js 依赖（包括 ts-node）。
 
 ## 📝 详细使用说明
 
@@ -159,11 +204,29 @@ npm run build
 
 **默认位置**: `src/pipelines/`
 
+**推荐：使用临时目录（避免污染父项目）**
+
+如果父项目不需要 Node.js 环境，推荐将 Pipeline 文件放在临时目录：
+
+```yaml
+# config.yaml（在父项目根目录）
+pipelines:
+  scripts_dir: ".github-action-builder/pipelines"  # 临时目录
+  dist_dir: ".github-action-builder/dist"           # 编译输出也放在临时目录
+```
+
+**优势**：
+- ✅ 不需要在父项目中安装 Node.js 依赖
+- ✅ 不需要在父项目中创建 `package.json` 和 `tsconfig.json`
+- ✅ 所有 Pipeline 相关文件集中在临时目录
+- ✅ 可以添加到 `.gitignore`，不污染父项目仓库
+
 **自定义位置**: 在父项目根目录创建 `config.yaml`：
 
 ```yaml
 pipelines:
   scripts_dir: "workflows/pipelines"  # 自定义 Pipeline 目录
+  dist_dir: "dist"                     # 编译输出目录（默认 dist）
 ```
 
 ### 2. 导入路径调整
@@ -503,4 +566,5 @@ pipelines:
 ## 📞 支持
 
 如有问题，请提交 Issue: https://github.com/shichao402/GithubActionAISelfBuilder/issues
+
 

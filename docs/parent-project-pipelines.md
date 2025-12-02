@@ -28,18 +28,41 @@
 ```yaml
 pipelines:
   scripts_dir: "custom/pipelines"  # 自定义 Pipeline 目录（相对于项目根目录）
+  dist_dir: "dist"                  # 编译输出目录（默认 dist）
+```
+
+**推荐：使用临时目录（避免污染父项目）**
+
+如果父项目不需要 Node.js 环境，推荐将 Pipeline 文件放在临时目录：
+
+```yaml
+# config.yaml
+pipelines:
+  scripts_dir: ".github-action-builder/pipelines"  # 临时目录
+  dist_dir: ".github-action-builder/dist"           # 编译输出也放在临时目录
 ```
 
 **示例目录结构**:
 ```
 父项目根目录/
-├── custom/
-│   └── pipelines/              # 自定义 Pipeline 目录
-│       └── my-build-pipeline.ts
-├── config.yaml                  # 配置文件
+├── .github-action-builder/      # 临时目录（可添加到 .gitignore）
+│   ├── pipelines/               # Pipeline 文件
+│   │   └── my-build-pipeline.ts
+│   └── dist/                    # 编译输出
+│       └── src/
+│           └── pipelines/
+├── Tools/
+│   └── GithubActionAISelfBuilder/  # 子模块
+├── config.yaml                   # 配置文件
 └── .github/
     └── workflows/
 ```
+
+**优势**：
+- ✅ 不需要在父项目中安装 Node.js 依赖
+- ✅ 不需要在父项目中创建 `package.json` 和 `tsconfig.json`
+- ✅ 所有 Pipeline 相关文件集中在临时目录
+- ✅ 可以添加到 `.gitignore`，不污染父项目仓库
 
 ## 创建 Pipeline 的步骤
 

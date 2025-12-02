@@ -45,26 +45,59 @@ alwaysApply: true
 
 **重要**: 父项目的 Pipeline 可以放在任何位置，通过配置文件指定。
 
+**推荐方案：使用临时目录（避免污染父项目）**
+
+如果父项目不需要 Node.js 环境，推荐将 Pipeline 文件放在子模块的临时目录：
+
+```yaml
+# config.yaml（在父项目根目录）
+pipelines:
+  scripts_dir: ".github-action-builder/pipelines"  # 临时目录
+  dist_dir: ".github-action-builder/dist"           # 编译输出也放在临时目录
+```
+
+**目录结构示例**：
+```
+父项目根目录/
+├── .github-action-builder/          # 临时目录（可添加到 .gitignore）
+│   ├── pipelines/                   # Pipeline 文件
+│   │   └── my-build-pipeline.ts
+│   └── dist/                        # 编译输出
+│       └── src/
+│           └── pipelines/
+├── Tools/
+│   └── GithubActionAISelfBuilder/   # 子模块
+├── config.yaml                       # 配置文件
+└── .github/
+    └── workflows/                    # 生成的工作流文件
+```
+
 **默认位置**:
 - 默认在项目根目录的 `src/pipelines/` 目录下查找 Pipeline 文件
 
 **自定义位置**:
 - 在父项目根目录创建 `config.yaml` 文件
 - 通过 `pipelines.scripts_dir` 配置自定义 Pipeline 目录
+- 通过 `pipelines.dist_dir` 配置编译输出目录（默认 `dist`）
 
 **配置示例** (`config.yaml`):
 ```yaml
 pipelines:
   scripts_dir: "src/pipelines"        # 默认值
-  # 或自定义位置：
-  # scripts_dir: "workflows/pipelines"
-  # scripts_dir: "custom/pipeline-scripts"
+  dist_dir: "dist"                     # 默认值
+  # 或使用临时目录（推荐）：
+  # scripts_dir: ".github-action-builder/pipelines"
+  # dist_dir: ".github-action-builder/dist"
+  # 或子模块临时目录：
+  # scripts_dir: "Tools/GithubActionAISelfBuilder/.temp/pipelines"
+  # dist_dir: "Tools/GithubActionAISelfBuilder/.temp/dist"
 ```
 
 **工作原理**:
 - 脚手架工具会从运行目录向上查找项目根目录（包含 `package.json` 的目录）
 - 读取项目根目录的 `config.yaml` 配置文件（如果存在）
 - 使用配置的 `pipelines.scripts_dir` 或默认的 `src/pipelines/` 目录查找 Pipeline 文件
+- 生成的 workflow 会自动使用配置的 `dist_dir` 路径
 
 ### 创建 Pipeline 类
 
@@ -172,12 +205,56 @@ npm run scaffold -- --pipeline YourPipeline --output .github/workflows/your-pipe
 
 ## AI 协助开发
 
+### 🚨 重要规则：禁止手动修改生成的 Workflow 文件
+
+**核心原则**：生成的 `.github/workflows/*.yml` 文件是**只读的**，AI 助手**严格禁止**手动修改这些文件。
+
+**正确的工作流程**：
+1. ✅ **修改 Pipeline 类**：如果需要修改工作流配置，应该修改对应的 Pipeline 类（`.ts` 文件）
+2. ✅ **重新生成 Workflow**：使用脚手架工具重新生成 workflow 文件
+3. ✅ **验证生成结果**：检查生成的 workflow 是否符合预期
+
+**禁止的操作**：
+- ❌ **禁止直接编辑** `.github/workflows/*.yml` 文件
+- ❌ **禁止手动修改** workflow 的步骤、环境变量、触发条件等
+- ❌ **禁止在 workflow 文件中添加**自定义步骤或配置
+- ❌ **禁止绕过 Pipeline 类**直接修改 workflow
+
+**为什么禁止手动修改**：
+- Workflow 文件是从 Pipeline 类自动生成的，手动修改会导致不一致
+- 下次重新生成时会覆盖手动修改的内容
+- Pipeline 类是单一数据源（Single Source of Truth）
+
+**如果需要修改工作流配置**：
+```typescript
+// ✅ 正确：修改 Pipeline 类
+export class MyBuildPipeline extends BasePipeline {
+  static getWorkflowTriggers() {
+    const config = createWorkflowConfig();
+    config.onPush(['main', 'develop']);  // 修改触发条件
+    return config.toDict().triggers || {};
+  }
+  
+  static getWorkflowSetup() {
+    const config = createWorkflowConfig();
+    config.setupNode('20', 'npm');  // 修改 Node.js 版本
+    return config.toDict().setup || {};
+  }
+}
+
+// 然后重新生成 workflow
+// npm run scaffold -- --pipeline MyBuildPipeline --output .github/workflows/my-build.yml --update
+```
+
 ### 创建新的流水线脚本
 
 1. **选择 Pipeline 存放位置**
    - 可以在父项目的任何位置创建 Pipeline 文件
    - 推荐放在 `src/pipelines/` 目录（默认位置）
-   - 或自定义位置，并在 `config.yaml` 中配置 `pipelines.scripts_dir`
+   - **或者放在子模块的临时目录**（推荐，避免污染父项目）：
+     - `.github-action-builder/pipelines/`（在项目根目录的临时目录）
+     - `Tools/GithubActionAISelfBuilder/.temp/pipelines/`（在子模块内的临时目录）
+   - 在 `config.yaml` 中配置 `pipelines.scripts_dir` 指向临时目录
 
 2. **创建 Pipeline 文件**
    - 在选定的目录创建新的 TypeScript 文件
@@ -199,8 +276,9 @@ npm run scaffold -- --pipeline YourPipeline --output .github/workflows/your-pipe
 ### 生成 GitHub Action 工作流
 
 1. 分析流水线脚本派生类的功能和依赖
-2. 使用脚手架工具生成符合 GitHub Actions 规范的 YAML 文件
+2. **使用脚手架工具生成**符合 GitHub Actions 规范的 YAML 文件
 3. 验证生成的 YAML 语法和逻辑
+4. **不要手动修改生成的 YAML 文件**
 
 ### 组合多个流水线
 

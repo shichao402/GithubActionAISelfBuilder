@@ -1,0 +1,42 @@
+name: Releasebase
+'on':
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "\u53D1\u5E03\u7248\u672C\u53F7"
+        required: true
+      release-notes:
+        description: "\u53D1\u5E03\u8BF4\u660E"
+        required: false
+        default: ''
+      build-branch:
+        description: "\u6784\u5EFA\u5206\u652F"
+        required: false
+        default: build
+jobs:
+  releasebase:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    - name: Set up Conda
+      uses: conda-incubator/setup-miniconda@v2
+      with:
+        environment-file: python/environment.yml
+        activate-environment: github-action-builder
+        auto-activate-base: 'false'
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: npm
+    - name: Run ReleaseBasePipeline
+      id: pipeline
+      run: "cd . && python -c \"\nimport sys\nsys.path.insert(0, '.')\nfrom src.pipelines.test.base\
+        \ import ReleaseBasePipeline\npipeline = ReleaseBasePipeline()\nresult = pipeline.run()\n\
+        if not result.success:\n    sys.exit(result.exit_code)\n\" "
+      env:
+        INPUT_VERSION: ${{ inputs.version || 'None' }}
+        INPUT_RELEASE_NOTES: ${{ inputs.release-notes || '' }}
+        INPUT_ARTIFACT_NAME: ${{ inputs.artifact-name || 'build-artifacts' }}
+        INPUT_BUILD_BRANCH: ${{ inputs.build-branch || 'build' }}

@@ -33,7 +33,17 @@ pipelines:
   config_dir: "config"
   
   # 默认脚本目录（相对于项目根目录）
+  # 可以设置为子模块内的临时目录，例如：
+  # - "src/pipelines" (默认，在父项目中)
+  # - ".github-action-builder/pipelines" (推荐，在子模块临时目录)
+  # - "Tools/GithubActionAISelfBuilder/.temp/pipelines" (子模块临时目录)
   scripts_dir: "src/pipelines"
+  
+  # 编译输出目录（相对于项目根目录）
+  # 如果 scripts_dir 在子模块临时目录，建议将 dist 也放在临时目录
+  # 例如：".github-action-builder/dist" 或 "Tools/GithubActionAISelfBuilder/.temp/dist"
+  # 如果未设置，默认使用 "dist"（在项目根目录）
+  dist_dir: "dist"
   
   # 是否包含 ProjectOnly 目录（默认 false，父项目不需要）
   # 本项目使用 config/ProjectOnly/config.yaml 覆盖此配置为 true

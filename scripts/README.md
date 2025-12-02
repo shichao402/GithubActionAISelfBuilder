@@ -1,78 +1,101 @@
-# Scripts 目录说明
+# Scripts 目录
 
-## 📁 目录结构
+此目录包含项目使用的各种脚本工具。
+
+## 目录结构
 
 ```
 scripts/
-├── README.md                    # 本文件
-├── README-push-git.md          # Git 推送脚本文档
-├── install-nodejs.ps1          # Node.js 安装脚本（可共享）
-└── ProjectOnly/                # 本项目特有的脚本（不共享）
-    ├── push-git.ts             # Git 推送脚本（TypeScript，跨平台）
-    ├── push-git.ps1            # Git 推送脚本（PowerShell，Windows）
-    ├── push-git.sh             # Git 推送脚本（Shell，Linux/Mac）
-    └── test-flutter-pipeline.ts # 测试 Flutter Pipeline（仅本项目）
-├── ai-debug-workflow.ts        # AI 调试工作流（可共享）
+├── env/                    # 环境相关脚本
+│   ├── install/           # 环境安装脚本
+│   │   ├── install.sh     # Bash 安装脚本（Linux/macOS）
+│   │   └── install.ps1    # PowerShell 安装脚本（Windows）
+│   └── README.md          # 环境脚本说明文档
+│
+├── tools/                 # Python 工具脚本
+│   ├── run_pipeline.py    # 本地运行 Pipeline
+│   ├── test_pipelines.py  # Pipeline 验证和调试
+│   ├── ai_debug_workflow.py  # AI 调试工作流
+│   └── README.md          # 工具脚本说明文档
+│
+├── ProjectOnly/            # 项目特有的脚本（不共享）
+│   ├── push-git.sh        # Git 推送脚本（Bash）
+│   ├── push-git.ps1       # Git 推送脚本（PowerShell）
+│   └── README-push-git.md # Git 推送脚本说明
+│
+└── README.md              # 本文件
 ```
 
-## 🚨 重要说明：ProjectOnly 目录
+## 环境安装脚本
 
-**`ProjectOnly/` 目录下的所有文件都是本项目特有的**，不会自动共享给父项目。
+### 位置
+`scripts/env/install/`
 
-### 为什么使用 ProjectOnly？
+### 使用方式
 
-- **明确区分**: 清楚标识哪些是本项目特有的，哪些可以共享
-- **避免混淆**: 防止父项目误用本项目特有的脚本
-- **灵活共享**: 需要共享的脚本可以复制到父项目，而不是直接引用
-
-## 📦 脚本分类
-
-### 1. 本项目特有脚本（ProjectOnly）
-
-位于 `scripts/ProjectOnly/` 目录：
-
-- **`push-git.ts`**, **`push-git.ps1`**, **`push-git.sh`** - Git 推送脚本（本项目使用）
-- **`test-flutter-pipeline.ts`** - 测试 Flutter Pipeline（仅本项目）
-
-### 2. 可共享脚本
-
-位于 `scripts/` 根目录：
-
-- **`install-nodejs.ps1`** - Node.js 安装脚本（可共享）
-- **`ai-debug-workflow.ts`** - AI 调试工作流（可共享）
-- **`test-pipelines.ts`** - Pipeline 验证和调试脚本（可共享）
-
-**在父项目中使用**:
+**Linux/macOS**:
 ```bash
-# 方式 1: 直接使用（如果作为 Git Submodule）
-npm run ai-debug -- .github/workflows/build.yml main
-npm run test:pipelines -- --pipeline YourPipeline --trigger
-
-# 方式 2: 复制到父项目
-cp GithubActionAISelfBuilder/scripts/ai-debug-workflow.ts scripts/
-cp GithubActionAISelfBuilder/scripts/test-pipelines.ts scripts/
+bash scripts/env/install/install.sh
+# 或
+./scripts/env/install/install.sh
 ```
 
-## 🧪 使用方法
-
-```bash
-# Pipeline 验证和调试（可共享）
-npm run test:pipelines -- --pipeline YourPipeline --trigger --watch
-npm run test:pipelines -- --all --clean --verify
-
-# AI 调试工作流（可共享）
-npm run ai-debug -- .github/workflows/flutter-build.yml main
-
-# 测试 Flutter Pipeline（仅本项目）
-npm run test:flutter
-
-# Git 推送（本项目）
-npm run push "提交信息"
+**Windows**:
+```powershell
+.\scripts\env\install\install.ps1
 ```
 
-## 📚 详细使用规则
+### 功能
+- 检查 Conda 是否安装
+- 使用 `python/environment.yml` 创建/更新 Conda 环境
+- 环境名称：`github-action-builder`
 
-**共享脚本使用规则**: 请参考 `.cursor/rules/scripts-usage.mdc`（共享给父项目）
+详细说明请参考：`scripts/env/README.md`
 
-**本项目特有规则**: 请参考 `.cursor/rules/ProjectOnly/` 目录下的规则文件
+## Python 工具脚本
 
+### 位置
+`scripts/tools/`
+
+### 主要脚本
+
+1. **run_pipeline.py** - 本地运行 Pipeline
+   ```bash
+   python scripts/tools/run_pipeline.py BuildPipeline
+   ```
+
+2. **test_pipelines.py** - Pipeline 验证和调试
+   ```bash
+   python scripts/tools/test_pipelines.py --all --verify
+   ```
+
+3. **ai_debug_workflow.py** - AI 调试工作流
+   ```bash
+   python scripts/tools/ai_debug_workflow.py .github/workflows/build.yml main
+   ```
+
+详细说明请参考：`scripts/tools/README.md`
+
+## 项目特有脚本
+
+### Git 推送脚本
+
+**位置**: `scripts/ProjectOnly/`
+
+**说明**: 这些脚本是项目特有的，用于自动化 Git 推送流程。
+
+详细说明请参考：`scripts/ProjectOnly/README-push-git.md`
+
+## 注意事项
+
+1. **环境脚本**: 环境安装脚本位于 `scripts/env/install/` 目录
+2. **工具脚本**: Python 工具脚本位于 `scripts/tools/` 目录，支持从项目根目录运行
+3. **项目特有脚本**: `ProjectOnly/` 目录下的脚本仅用于本项目开发，不会共享给父项目
+4. **路径**: 所有脚本都支持从项目根目录运行，会自动检测路径
+
+## 相关文档
+
+- **环境脚本**: `scripts/env/README.md`
+- **工具脚本**: `scripts/tools/README.md`
+- **Git 推送脚本**: `scripts/ProjectOnly/README-push-git.md`
+- **脚本使用规则**: `.cursor/rules/scripts-usage.mdc`

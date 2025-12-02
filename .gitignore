@@ -27,7 +27,6 @@ yarn-error.log*
 lerna-debug.log*
 
 # GitHub Actions runtime files
-.github/.github_run_id.txt
 .github/workflow_logs/
 
 # Environment
@@ -46,16 +45,7 @@ artifacts/
 *.tgz
 
 # Flutter demo
-flutter-demo/.dart_tool/
-flutter-demo/.flutter-plugins
-flutter-demo/.flutter-plugins-dependencies
-flutter-demo/.packages
-flutter-demo/.pub-cache/
-flutter-demo/.pub/
-flutter-demo/build/
-flutter-demo/.idea/
-flutter-demo/*.iml
-flutter-demo/.metadata
+flutter-demo/
 
 # Test
 coverage/
