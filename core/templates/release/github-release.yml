@@ -1,0 +1,100 @@
+name: Create Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g., v1.0.0)'
+        required: true
+      prerelease:
+        description: 'Mark as pre-release'
+        required: false
+        default: 'false'
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  build:
+    name: Build Release Artifacts
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Build
+        run: npm run build
+      
+      - name: Package artifacts
+        run: |
+          mkdir -p release
+          tar -czf release/build-linux.tar.gz dist/
+          cd dist && zip -r ../release/build-windows.zip . && cd ..
+      
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-artifacts
+          path: release/
+  
+  release:
+    name: Create GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: release-artifacts
+          path: release/
+      
+      - name: Generate changelog
+        id: changelog
+        run: |
+          if [ -z "${{ github.event.inputs.version }}" ]; then
+            VERSION=${GITHUB_REF#refs/tags/}
+          else
+            VERSION=${{ github.event.inputs.version }}
+          fi
+          
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          
+          # 生成 changelog
+          git log --pretty=format:"- %s (%h)" $(git describe --tags --abbrev=0 HEAD^)..HEAD > CHANGELOG.md
+      
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.changelog.outputs.VERSION }}
+          name: Release ${{ steps.changelog.outputs.VERSION }}
+          body_path: CHANGELOG.md
+          prerelease: ${{ github.event.inputs.prerelease == 'true' }}
+          files: |
+            release/*.tar.gz
+            release/*.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+

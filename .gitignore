@@ -1,70 +1,76 @@
-# Dependencies
-node_modules/
-# package-lock.json - 应该提交到仓库以确保依赖版本一致性
-yarn.lock
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
 
-# Build outputs
-dist/
-*.tsbuildinfo
-
-# IDE
+# IDEs
 .vscode/
 .idea/
 *.swp
 *.swo
-*.sublime-*
+*~
 
-# OS
-.DS_Store
-Thumbs.db
-desktop.ini
+# Cursor
+.cursor/
 
-# Logs
-*.log
+# Go
+core/tools/go/dist/
+core/tools/go/coverage.out
+core/tools/go/coverage.html
+*.test
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+*.cover
+.hypothesis/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Node
+node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-lerna-debug.log*
+package-lock.json
+yarn.lock
 
-# GitHub Actions runtime files
-.github/workflow_logs/
-
-# Environment
-.env
-.env.local
-.env.*.local
-
-# Act (local GitHub Actions testing)
-.actrc
-.act/
-
-# Artifacts
-artifacts/
-*.zip
-*.tar.gz
-*.tgz
-
-# Flutter demo
-flutter-demo/
-
-# Test
-coverage/
-.nyc_output/
-*.test.ts.snap
-.jest-cache/
-
-# Project-specific Cursor rules
-# 注意：ProjectOnly 目录下的规则文件是项目特有的，不应该在父项目中使用
-# 但这些文件应该被提交到仓库，用于项目维护
-# 父项目通过 .cursorignore 文件排除这些规则（见 .cursorignore.example）
-
-# Project-specific configuration (use config.example.yaml as template)
-config.yaml
-
-# Temporary files
+# 测试和临时文件
+/tmp/
+*.log
 *.tmp
-*.temp
-.cache/
-tmp/
-temp/
 
+# Dev 目录中的测试项目可能很大，考虑忽略
+dev/test-project/*/node_modules/
+dev/test-project/*/dist/
+dev/test-project/*/build/
+dev/test-project/*/.dart_tool/
+dev/test-project/*/.flutter-plugins
+dev/test-project/*/.flutter-plugins-dependencies
+
+# Legacy 目录（保留，但不追踪变更）
+# legacy/ 可以提交，作为历史参考
+
+# 临时安装测试目录
+/tmp/
+*.tmp

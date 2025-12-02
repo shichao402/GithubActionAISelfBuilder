@@ -1,0 +1,26 @@
+# 构建产物
+dist/
+*.exe
+*.dll
+*.so
+*.dylib
+
+# 测试
+*.test
+*.out
+coverage.out
+coverage.html
+
+# Go
+vendor/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 临时文件
+*.tmp
+*.log
+

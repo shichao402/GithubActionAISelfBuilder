@@ -1,258 +1,305 @@
-# GitHub Action Builder
+# GitHub Action Toolset
 
-一个通用的 GitHub Action 构建脚手架工具。支持通过 Pipeline 类定义配置和逻辑，自动生成 GitHub Action 工作流文件。
+> 一套完整的 GitHub Actions AI 规则工具集，让 AI 助手自动遵循最佳实践
 
-## 🚀 核心特性
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/firoyang/github-action-toolset)
 
-1. ✅ **完全 Python**：Pipeline 类、脚手架工具、Actions 全部使用 Python
-2. ✅ **类型安全**：使用 Python 类型注解 + mypy 进行类型检查
-3. ✅ **以派生类为单位生成 YAML**：每个 Pipeline 类对应一个 workflow 文件
-4. ✅ **可复用 Actions**：可以在多个项目中使用
-5. ✅ **跨平台构建**：使用 GitHub Actions 的真实 runner
-6. ✅ **AI 自我调试**：自动触发、监控和收集日志
-7. ✅ **环境管理简单**：使用 Conda 固化运行环境
+## 🎯 项目定位
 
-## 技术栈
+**这不是一个框架，而是一套规则 + 工具的集合。**
 
-- **语言**: Python 3.11+
-- **环境管理**: Conda
-- **类型检查**: mypy
-- **测试框架**: pytest
+当你厌倦了重复教 AI 如何构建和调试 GitHub Actions 时，这个工具集可以帮你：
+- ✅ 让 AI 自动遵循 GitHub Actions 最佳实践
+- ✅ 提供开箱即用的 Workflow 模板
+- ✅ 一键调试和修复失败的工作流
+- ✅ 保持本地构建和 CI 的一致性
 
-## 快速开始
+## ✨ 核心特性
 
-### 1. 创建 Conda 环境
+### 1. AI 规则文件 📋
 
-```bash
-cd python
-conda env create -f environment.yml
-conda activate github-action-builder
-```
+教会 AI 助手如何正确处理 GitHub Actions：
 
-### 2. 创建 Pipeline 类
+- **github-actions.mdc** - GitHub Actions 基础规则和最佳实践
+- **debugging.mdc** - 工作流调试标准流程
+- **best-practices.mdc** - 性能优化和安全实践
 
-```python
-# src/pipelines/my_pipeline.py
-from src.base_pipeline import BasePipeline, PipelineResult
-from src.workflow_config import create_workflow_config
+**效果**：安装后，AI 会自动使用正确的方式处理 GitHub Actions，无需重复提醒。
 
-class MyPipeline(BasePipeline):
-    @staticmethod
-    def get_workflow_inputs():
-        config = create_workflow_config()
-        config.add_input("input-name", "输入参数描述", False, "default-value")
-        return config.to_dict().get("inputs", {})
-    
-    def execute(self) -> PipelineResult:
-        # 实现逻辑
-        return PipelineResult(success=True, message="成功", exit_code=0)
-```
+### 2. 调试工具 🔧
 
-### 3. 生成 Workflow
+#### Go 工具（主力，强烈推荐）
 
-```bash
-# 在项目根目录
-python -m src.scaffold --pipeline MyPipeline --output .github/workflows/my-pipeline.yml
-```
+**gh-action-debug** - 用 Go 编写的 GitHub Actions 调试工具：
 
-### 4. 本地测试
+- **单一可执行文件** - 无需依赖，跨平台运行
+- **一个命令完成所有步骤** - 触发 + 监控 + 日志收集 + 错误分析 + 建议
+- **标准 JSON 输出** - AI 友好，易于解析
+- **智能错误分析** - 12+ 种常见错误模式，自动生成修复建议
+- **性能优异** - 启动快 10-100x（相比 Python）
 
-```bash
-# 运行 Pipeline
-python scripts/run_pipeline.py MyPipeline --input-name "value"
+**效果**：AI 只需运行一个命令，立即得到结构化的错误和修复建议。
 
-# 验证 Workflow
-python scripts/test_pipelines.py --pipeline MyPipeline --verify
-```
 
-## 项目结构
+### 3. Workflow 模板库 📦
 
-```
-github-action-builder/
-├── python/                      # Python 版本（主要代码）
-│   ├── src/
-│   │   ├── base_pipeline.py     # Pipeline 基类
-│   │   ├── workflow_config.py   # 工作流配置构建器
-│   │   ├── scaffold.py          # 脚手架工具
-│   │   └── pipelines/
-│   │       ├── base/            # 基类 Pipeline
-│   │       ├── build/            # 构建相关 Pipeline
-│   │       └── test/             # 测试相关 Pipeline
-│   ├── scripts/                 # 工具脚本
-│   ├── tests/                   # 测试文件
-│   ├── environment.yml          # Conda 环境配置
-│   └── README.md                # Python 版本文档
-├── .github/workflows/           # 生成的 YAML 文件
-├── config/                      # 配置文件
-└── README.md                    # 本文件
-```
+常用的 GitHub Actions 工作流模板：
 
-## 使用方式
+- **构建模板** - Node.js, Python, Flutter 等
+- **测试模板** - pytest, jest 等
+- **发布模板** - GitHub Release, npm 发布
+- **部署模板** - Docker, AWS, Azure 等
 
-### 1. 创建 Pipeline 类
+**效果**：复制模板，简单修改，立即可用。
 
-继承 `BasePipeline` 并实现 `execute()` 方法：
+## 🚀 快速开始
 
-```python
-from src.base_pipeline import BasePipeline, PipelineResult
-from src.workflow_config import create_workflow_config
+### 安装
 
-class MyBuildPipeline(BasePipeline):
-    @staticmethod
-    def get_workflow_inputs():
-        config = create_workflow_config()
-        config.add_input("build-command", "构建命令", False, "npm run build")
-        return config.to_dict().get("inputs", {})
-    
-    @staticmethod
-    def get_workflow_setup():
-        config = create_workflow_config()
-        config.setup_node("18", "npm")
-        return config.to_dict().get("setup", {})
-    
-    @staticmethod
-    def get_workflow_triggers():
-        config = create_workflow_config()
-        config.on_push(["main", "develop"])
-        config.on_pull_request(["main"])
-        return config.to_dict().get("triggers", {})
-    
-    def execute(self) -> PipelineResult:
-        build_command = self.get_input("build-command", "npm run build")
-        success = self.run_command(build_command)
-        
-        return PipelineResult(
-            success=success,
-            message="构建成功" if success else "构建失败",
-            exit_code=0 if success else 1
-        )
-```
-
-### 2. 生成 Workflow
+**一键安装**（推荐）：
 
 ```bash
-python -m src.scaffold --pipeline MyBuildPipeline --output .github/workflows/my-build.yml
+curl -sL https://raw.githubusercontent.com/firoyang/github-action-toolset/main/core/scripts/install.sh | bash
 ```
 
-### 3. 运行 Pipeline（本地测试）
+**或使用 Git Submodule**：
 
 ```bash
-python scripts/run_pipeline.py MyBuildPipeline --build-command "npm run build"
+git submodule add https://github.com/firoyang/github-action-toolset .toolsets/github-actions
+bash .toolsets/github-actions/core/scripts/install.sh
 ```
 
-### 4. AI 调试 Workflow
+### 使用
+
+**1. 创建工作流（从模板）**：
 
 ```bash
-python scripts/ai_debug_workflow.py .github/workflows/my-build.yml main
+# 复制 Node.js 构建模板
+cp .github/templates/build/nodejs-build.yml .github/workflows/build.yml
+
+# 根据需求自定义
+vim .github/workflows/build.yml
 ```
 
-## 核心概念
-
-### Pipeline 类
-
-Pipeline 类继承自 `BasePipeline`，负责定义工作流的配置和执行逻辑。
-
-**必需方法**:
-- `execute()`: 执行 Pipeline 逻辑
-
-**可选静态方法**（用于定义工作流配置）:
-- `get_workflow_inputs()`: 定义输入参数
-- `get_workflow_setup()`: 定义环境设置
-- `get_workflow_triggers()`: 定义触发条件
-- `get_workflow_runs_on()`: 定义运行环境
-- `get_workflow_env()`: 定义环境变量
-
-### WorkflowConfig
-
-使用 `WorkflowConfig` 构建器来定义工作流配置：
-
-```python
-config = create_workflow_config()
-config.add_input("input-name", "描述", False, "default")
-config.setup_node("18", "npm")
-config.on_push(["main"])
-config.on_pull_request(["main"])
-```
-
-## 示例 Pipeline
-
-### 构建 Pipeline
-
-```python
-from src.pipelines.base.build_pipeline import BuildPipeline
-
-class MyBuildPipeline(BuildPipeline):
-    def perform_build(self) -> bool:
-        build_command = self.get_input("build-command", "npm run build")
-        return self.run_command(build_command)
-```
-
-### 发布 Pipeline
-
-```python
-from src.pipelines.base.release_base_pipeline import ReleaseBasePipeline
-
-class MyReleasePipeline(ReleaseBasePipeline):
-    def create_release(self, version: str, release_notes: str, artifact_path: str) -> bool:
-        # 实现发布逻辑
-        return True
-```
-
-## 工具脚本
-
-### run_pipeline.py
-
-本地运行 Pipeline：
+**2. 调试工作流（推荐使用 Go 工具）**：
 
 ```bash
-python scripts/run_pipeline.py MyPipeline --input-name "value"
+# 使用 gh-action-debug（Go 工具，推荐）
+gh-action-debug workflow debug .github/workflows/build.yml main
+
+# JSON 输出（给 AI 使用）
+gh-action-debug workflow debug .github/workflows/build.yml main --output json
+
+# 带参数触发
+gh-action-debug workflow debug .github/workflows/release.yml main --input version=1.0.0
 ```
 
-### test_pipelines.py
+**3. 让 AI 帮你**：
 
-验证和测试 Pipeline：
+现在你可以简单地告诉 AI：
+
+```
+"帮我创建一个 Node.js 构建工作流"
+"调试失败的 build.yml 工作流"
+"优化构建速度"
+```
+
+AI 会自动：
+- ✅ 使用合适的模板
+- ✅ 遵循最佳实践
+- ✅ 使用调试工具
+- ✅ 提供修复建议
+
+## 📦 安装内容
+
+安装后，你的项目会包含：
+
+```
+你的项目/
+├── .cursor/
+│   └── rules/
+│       └── github-actions/         # AI 规则文件
+│           ├── github-actions.mdc
+│           ├── debugging.mdc
+│           └── best-practices.mdc
+├── scripts/
+│   └── toolsets/
+│       └── github-actions/         # 工具脚本
+│           ├── ai_debug_workflow.py
+│           ├── test_pipelines.py
+│           └── run_pipeline.py
+└── .github/
+    └── templates/                  # Workflow 模板
+        ├── build/
+        ├── test/
+        ├── release/
+        └── deployment/
+```
+
+## 🎯 使用场景
+
+### 场景 1：创建新的构建工作流
 
 ```bash
-# 验证生成的 workflow
-python scripts/test_pipelines.py --pipeline MyPipeline --verify
+# 1. 复制模板
+cp .github/templates/build/nodejs-build.yml .github/workflows/build.yml
 
-# 测试所有 Pipeline
-python scripts/test_pipelines.py --all --clean --verify
+# 2. 推送代码
+git add .github/workflows/build.yml
+git commit -m "Add build workflow"
+git push
+
+# 3. 测试工作流
+npm run ai-debug -- .github/workflows/build.yml main
 ```
 
-### ai_debug_workflow.py
-
-AI 调试工作流：
+### 场景 2：调试失败的工作流
 
 ```bash
-python scripts/ai_debug_workflow.py .github/workflows/my-pipeline.yml main
+# 1. 使用调试脚本
+npm run ai-debug -- .github/workflows/build.yml main
+
+# 2. 查看详细日志和错误分析（自动）
+
+# 3. 根据建议修复代码
+
+# 4. 推送并重新测试
+git add .
+git commit -m "Fix workflow issues"
+git push
+npm run ai-debug -- .github/workflows/build.yml main
 ```
 
-## 类型检查
+### 场景 3：批量测试多个工作流
 
 ```bash
-# 安装 mypy
-conda install -c conda-forge mypy
+# 测试所有工作流
+npm run test-pipeline -- --all --trigger --watch
 
-# 类型检查
-mypy python/src/ --strict --ignore-missing-imports
+# 测试指定工作流
+npm run test-pipeline -- --workflow build.yml --trigger
 ```
 
-## 测试
+## 📚 文档
 
-```bash
-# 运行测试
-cd python
-pytest tests/
+- [安装指南](docs/INSTALL.md) - 详细的安装说明
+- [使用指南](docs/USAGE.md) - 完整的使用说明
+- [快速开始](docs/guides/quickstart.md) - 5分钟快速上手
+- [示例](docs/examples/) - 实际项目示例
+
+## 🔄 工作原理
+
+### 传统方式（繁琐）：
+
+```
+1. 你：帮我创建一个 Node.js 构建工作流
+2. AI：创建了一个基础的 YAML 文件
+3. 你：不对，需要添加缓存
+4. AI：好的，添加了缓存
+5. 你：测试失败了，帮我调试
+6. AI：请运行 gh workflow run ...
+7. 你：不对，应该先推送代码
+8. AI：好的，先推送...
+9. AI：请等待... 手动查看日志... 手动分析...
+（重复很多次，非常繁琐）
 ```
 
-## 文档
+### 使用工具集（简单）：
 
-- [快速开始指南](python/QUICK_START.md)
-- [迁移完成报告](python/MIGRATION_COMPLETE.md)
-- [使用指南](docs/USAGE_GUIDE.md)
-- [父项目 Pipeline 指南](docs/parent-project-pipelines.md)
+```
+1. 你：帮我创建一个 Node.js 构建工作流
+2. AI：好的（自动从模板复制，已包含缓存、最佳实践）
+3. AI：已推送代码，使用 gh-action-debug 工具测试...
+4. AI：一个命令完成：触发 → 监控 → 日志收集 → 错误分析 → 建议
+5. AI：发现问题：缺少 express 依赖
+6. AI：应用建议：添加到 package.json
+7. AI：推送修复，重新验证
+8. AI：✅ 测试通过！
+```
 
-## 许可证
+**关键优势**：
+- AI 不再需要手动组合 5-10 个命令
+- 一个命令得到结构化的错误和建议
+- 自动化程度极高，几乎无需人工干预
 
-MIT License
+## 🤝 为什么不用框架？
+
+我们尝试过构建复杂的框架（基类、抽象层、脚手架），但发现：
+
+- ❌ 学习成本高 - 需要学习框架 API
+- ❌ AI 也要学 - AI 需要理解你的框架
+- ❌ 灵活性差 - 被框架限制
+- ❌ 维护复杂 - 两套代码（框架 + 生成的代码）
+
+**规则 + 工具 + 模板**的方式：
+
+- ✅ 零学习成本 - 直接用 YAML
+- ✅ AI 友好 - 规则让 AI 知道怎么做
+- ✅ 完全灵活 - 随意修改 YAML
+- ✅ 易于维护 - 只有一套 YAML 文件
+
+## 🛠️ 依赖要求
+
+### 必需
+
+- **Git** - 版本控制
+- **GitHub CLI (gh)** - 触发和监控工作流
+  - 安装：https://cli.github.com/
+  - 登录：`gh auth login`
+
+### 可选
+
+- **Python 3.8+** - 运行工具脚本（推荐）
+- **Node.js** - npm scripts 支持（如果项目使用）
+
+## 📝 开发
+
+### 项目结构
+
+```
+github-action-toolset/
+├── toolset.json           # 工具集自描述文件
+├── core/                  # 核心可复用内容
+│   ├── rules/            # AI 规则文件
+│   ├── scripts/          # 工具脚本
+│   └── templates/        # Workflow 模板
+├── dev/                   # 开发测试目录（不复用）
+├── docs/                  # 文档
+└── README.md             # 项目说明
+```
+
+### 贡献
+
+欢迎贡献！你可以：
+
+1. 添加新的模板
+2. 改进 AI 规则
+3. 增强工具脚本
+4. 完善文档
+
+步骤：
+1. Fork 项目
+2. 创建特性分支
+3. 提交更改
+4. 创建 Pull Request
+
+## 📄 许可证
+
+MIT License - 详见 [LICENSE](LICENSE)
+
+## 🙏 致谢
+
+感谢所有使用和贡献此项目的开发者。
+
+## 🔗 相关链接
+
+- [GitHub Actions 官方文档](https://docs.github.com/en/actions)
+- [GitHub CLI 文档](https://cli.github.com/manual/)
+- [项目讨论区](https://github.com/firoyang/github-action-toolset/discussions)
+
+---
+
+**记住**：这不是框架，而是让 AI 更好地帮你处理 GitHub Actions 的工具集。
+
+如果你厌倦了重复教 AI 同样的事情，试试这个工具集吧！ 🚀

@@ -1,0 +1,31 @@
+# gh-action-debug 配置文件示例
+# 
+# 保存到以下任一位置：
+#   - ~/.config/gh-action-debug/config.yaml
+#   - ~/.gh-action-debug.yaml
+#   - ./gh-action-debug.yaml (当前目录)
+
+# GitHub 配置
+github:
+  # GitHub Token（可选，推荐使用 gh auth login 或环境变量）
+  # token: ghp_xxxxxxxxxxxx
+  
+  # 仓库所有者（可选，会自动从 git 仓库获取）
+  # owner: your-username
+  
+  # 仓库名称（可选，会自动从 git 仓库获取）
+  # repo: your-repo
+
+# 输出配置
+output:
+  # 输出格式：json | human
+  format: human
+
+# 调试配置
+debug:
+  # 最长等待时间（秒），默认 3600（1小时）
+  timeout: 3600
+  
+  # 轮询间隔（秒），默认 5
+  poll_interval: 5
+
