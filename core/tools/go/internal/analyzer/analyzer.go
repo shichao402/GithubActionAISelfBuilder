@@ -170,3 +170,4 @@ func (a *Analyzer) GenerateSummary(errors []types.ErrorInfo) string {
 	return summary.String()
 }
 
+

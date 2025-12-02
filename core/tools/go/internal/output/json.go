@@ -34,3 +34,4 @@ func FormatTestResultJSON(result *types.TestResult) (string, error) {
 	return string(data), nil
 }
 
+

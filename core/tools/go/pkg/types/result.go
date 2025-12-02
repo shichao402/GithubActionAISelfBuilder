@@ -64,3 +64,4 @@ type WorkflowTestResult struct {
 	Errors   []ErrorInfo `json:"errors,omitempty"`
 }
 
+

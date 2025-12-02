@@ -186,3 +186,4 @@ npm run scaffold -- --pipeline MyPipeline --output .github/workflows/my-pipeline
 
 这样既满足了类型安全的需求，又避免了 TypeScript 带来的麻烦。
 
+

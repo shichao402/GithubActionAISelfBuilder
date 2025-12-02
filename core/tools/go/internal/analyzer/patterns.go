@@ -238,3 +238,4 @@ func ExtractMatches(pattern *ErrorPattern, log string) []string {
 	return pattern.Pattern.FindStringSubmatch(log)
 }
 
+
