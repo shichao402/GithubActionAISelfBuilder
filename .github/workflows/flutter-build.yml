@@ -80,6 +80,7 @@ jobs:
 
       - name: Check for Flutter project
         id: check_flutter
+        shell: bash
         run: |
           if [ -f "pubspec.yaml" ]; then
             echo "is_flutter=true" >> $GITHUB_OUTPUT
@@ -121,6 +122,7 @@ jobs:
       
       - name: Verify build script (if not Flutter project)
         if: steps.check_flutter.outputs.is_flutter == 'false'
+        shell: bash
         run: |
           echo "验证 Flutter 构建脚本..."
           bash -n scripts/flutter-build.sh && echo "✅ 脚本语法正确" || exit 1
@@ -150,6 +152,7 @@ jobs:
 
       - name: Build summary
         if: always()
+        shell: bash
         run: |
           echo "## Build Summary" >> $GITHUB_STEP_SUMMARY
           echo "- Platform: ${{ matrix.platform }}" >> $GITHUB_STEP_SUMMARY
