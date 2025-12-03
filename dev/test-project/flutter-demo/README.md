@@ -1,20 +1,16 @@
-# Flutter Demo
+# flutter_demo
 
-这是一个简单的 Flutter 样例应用，用于测试 Windows 构建流程。
+A new Flutter project.
 
-## 功能
+## Getting Started
 
-- 基本的 Material Design UI
-- 计数器功能
-- 适用于 Windows 平台构建
+This project is a starting point for a Flutter application.
 
-## 构建
+A few resources to get you started if this is your first Flutter project:
 
-使用 Flutter 构建 Windows 版本：
+- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
+- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
 
-```bash
-flutter build windows --release
-```
-
-构建产物将位于 `build/windows/runner/Release/` 目录。
-
+For help getting started with Flutter development, view the
+[online documentation](https://docs.flutter.dev/), which offers tutorials,
+samples, guidance on mobile development, and a full API reference.
