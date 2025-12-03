@@ -11,7 +11,9 @@
 *~
 
 # Cursor
-.cursor/
+.cursor/*
+# 但追踪规则文件（用于本项目开发测试）
+!.cursor/rules/
 
 # Go
 core/tools/go/dist/

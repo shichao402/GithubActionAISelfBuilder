@@ -1,0 +1,221 @@
+---
+alwaysApply: true
+---
+
+# GitHub Action Toolset 开发规则
+
+## 🎯 本项目特殊说明
+
+**本项目是 GitHub Action AI 工具集本身**，不是普通的使用项目。
+
+开发本工具集时需要注意：
+
+1. **测试项目位置**: 使用 `dev/test-project/flutter-demo` 进行工作流测试
+2. **规则文件**: 通用规则在 `core/rules/`，`.cursor/rules/github-actions/` 中的规则是软链接
+3. **Go 工具**: 源代码在 `core/tools/go/`，编译后输出到 `core/tools/go/dist/`
+4. **工作流模板**: 模板在 `core/templates/`，实际工作流在 `.github/workflows/`
+5. **测试工作流**: 实际工作流使用 `working-directory: dev/test-project/flutter-demo`
+
+## 🔧 开发工作流
+
+### 1. 修改 Go 工具
+
+当需要修改 `gh-action-debug` 工具时：
+
+```bash
+# 1. 修改代码
+vim core/tools/go/internal/debugger/debugger.go
+
+# 2. 重新构建（会自动检测平台）
+cd core/tools/go
+make build
+
+# 3. 验证构建产物
+ls -lh dist/
+
+# 4. 本地测试工具
+./dist/gh-action-debug --help
+./dist/gh-action-debug workflow list
+
+# 5. 测试完整调试流程
+./dist/gh-action-debug workflow debug \
+  .github/workflows/flutter-build.yml main \
+  -f platform=android \
+  --output json
+```
+
+**注意**：
+- 构建后的工具在 `core/tools/go/dist/gh-action-debug`
+- 在本项目中测试时，使用 `./core/tools/go/dist/gh-action-debug`
+- 不要使用全局安装的版本，确保测试的是最新构建
+
+### 2. 修改规则文件
+
+当需要修改 AI 规则时：
+
+```bash
+# 1. 修改通用规则（这些规则会被输出到其他项目）
+vim core/rules/github-actions.mdc
+vim core/rules/debugging.mdc
+vim core/rules/best-practices.mdc
+
+# 2. 规则立即生效
+# 因为 .cursor/rules/github-actions/ 中是软链接
+# AI 会立即读取到最新的规则
+
+# 3. 测试规则效果
+# 直接在本项目中与 AI 对话，观察 AI 是否遵循新规则
+```
+
+**重要提示**：
+- ✅ 修改 `core/rules/*.mdc` 会立即影响本项目的 AI 行为
+- ✅ 这样可以在本项目中验证规则是否合理
+- ✅ "吃自己的狗粮" - 确保输出的规则真正有效
+
+### 3. 修改工作流模板
+
+当需要修改工作流模板时：
+
+```bash
+# 1. 修改模板（供其他项目使用）
+vim core/templates/build/flutter-build.yml
+
+# 2. 同步到本项目的实际工作流
+vim .github/workflows/flutter-build.yml
+
+# 3. 推送并测试
+git add .
+git commit -m "feat: 更新 Flutter 构建模板"
+git push origin main
+
+# 4. 使用本地工具触发测试
+./core/tools/go/dist/gh-action-debug workflow debug \
+  .github/workflows/flutter-build.yml main \
+  -f platform=android \
+  --output json
+```
+
+**注意**：
+- 模板在 `core/templates/`
+- 本项目的实际工作流在 `.github/workflows/`
+- 两者需要保持一致
+
+### 4. 测试项目管理
+
+本项目使用 `dev/test-project/flutter-demo` 作为测试项目：
+
+```bash
+# 查看测试项目
+cd dev/test-project/flutter-demo
+ls -la
+
+# 工作流中的所有 Flutter 步骤都使用：
+# working-directory: dev/test-project/flutter-demo
+```
+
+**为什么需要测试项目**：
+- ✅ 本项目根目录不是 Flutter 项目
+- ✅ 需要一个真实的 Flutter 项目来测试工作流
+- ✅ 避免污染本项目根目录
+
+## 📋 开发检查清单
+
+### 开发新功能前：
+
+- [ ] 确认修改的是 `core/` 目录中的文件（通用部分）
+- [ ] 确认 `.cursor/rules/github-actions/` 中的软链接存在
+- [ ] 确认测试项目 `dev/test-project/flutter-demo` 可用
+
+### 开发新功能后：
+
+- [ ] Go 工具：是否重新构建？（`make build`）
+- [ ] 规则文件：是否在 `core/rules/` 中修改？
+- [ ] 工作流模板：是否同步更新了本项目的实际工作流？
+- [ ] 是否推送代码到远程仓库？
+- [ ] 是否触发并验证了工作流？
+- [ ] 是否更新了相关文档？
+
+## 🚨 特殊注意事项
+
+### 1. 不要混淆路径
+
+```bash
+# ❌ 错误：在项目根目录找 pubspec.yaml
+cd /Users/firoyang/GithubActionAISelfBuilder
+flutter build android  # 失败：不是 Flutter 项目
+
+# ✅ 正确：在测试项目中构建
+cd /Users/firoyang/GithubActionAISelfBuilder/dev/test-project/flutter-demo
+flutter build android  # 成功
+```
+
+### 2. 使用本地构建的工具
+
+```bash
+# ❌ 错误：使用全局安装的旧版本
+gh-action-debug workflow debug ...
+
+# ✅ 正确：使用本地最新构建
+./core/tools/go/dist/gh-action-debug workflow debug ...
+```
+
+### 3. 测试规则修改
+
+修改规则后，立即在本项目中测试：
+
+```markdown
+## 测试对话示例
+
+用户：帮我调试一下 Flutter 工作流
+
+AI 应该：
+1. ✅ 先推送代码（如果有修改）
+2. ✅ 使用 `./core/tools/go/dist/gh-action-debug workflow debug ...`
+3. ✅ 输出 JSON 格式（`--output json`）
+4. ✅ 解析 JSON 中的 errors 和 suggestions
+5. ✅ 应用修复建议
+6. ❌ 不应该手动运行 `gh workflow run` + `gh run watch`
+```
+
+## 🎯 本项目的工作流特点
+
+### Flutter 工作流
+
+`.github/workflows/flutter-build.yml` 有特殊配置：
+
+```yaml
+# 所有 Flutter 相关步骤都使用：
+working-directory: dev/test-project/flutter-demo
+
+# 原因：
+# - 本项目根目录不是 Flutter 项目
+# - 测试项目在子目录中
+```
+
+### 触发方式
+
+```bash
+# 本项目的 Flutter 工作流需要 platform 参数
+./core/tools/go/dist/gh-action-debug workflow debug \
+  .github/workflows/flutter-build.yml main \
+  -f platform=android \
+  --output json
+```
+
+## 📚 相关文档
+
+- 通用规则：`core/rules/` （通过软链接在本项目中生效）
+- Go 工具文档：`core/tools/go/README.md`
+- 安装脚本：`core/scripts/install.sh`
+- 工具集清单：`toolset.json`
+
+## 💡 开发建议
+
+1. **先在本项目测试**：修改后先在本项目中验证，确保功能正常
+2. **遵循自己的规则**：本项目也应该遵循 `core/rules/` 中的规则
+3. **保持一致性**：模板和实际工作流保持一致
+4. **文档同步**：功能修改后及时更新文档
+
+---
+
+**记住**：本项目既是工具集，也是工具集的第一个使用者。在开发时要确保工具对自己也有效！
