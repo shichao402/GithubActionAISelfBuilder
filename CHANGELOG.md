@@ -19,8 +19,8 @@
 
 - 创建 `core/` 目录作为可复用内容的核心
   - `core/rules/` - AI 规则文件
-  - `core/scripts/` - 工具脚本
-  - `core/templates/` - YAML 模板库
+  - `core/scripts/` - 安装脚本
+  - `core/tools/go/` - Go 调试工具源码
 
 #### AI 规则文件
 

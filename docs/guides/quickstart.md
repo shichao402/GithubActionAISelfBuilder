@@ -41,14 +41,17 @@ sudo apt install golang
 在你的项目根目录运行：
 
 ```bash
-bash /path/to/GithubActionAISelfBuilder/core/scripts/install.sh
+# 手动安装：复制规则文件和工具
+# 参考 docs/INSTALL.md 中的详细步骤
+mkdir -p .cursor/rules/github-actions
+cp /path/to/GithubActionAISelfBuilder/core/rules/*.mdc .cursor/rules/github-actions/
+# ... (参考 INSTALL.md 中的完整步骤)
 ```
 
 你会看到：
 ```
-✅ 已复制 3 个规则文件到 core/rules/
+✅ 已复制 3 个规则文件到 .cursor/rules/github-actions/
 ✅ Go 工具已安装到 scripts/toolsets/github-actions/gh-action-debug
-✅ 已复制模板文件到 core/templates/
 ```
 
 ## 🎯 第二步：创建你的第一个工作流
@@ -56,10 +59,10 @@ bash /path/to/GithubActionAISelfBuilder/core/scripts/install.sh
 ### 场景 1：Flutter 项目
 
 ```bash
-# 1. 复制模板
-cp core/templates/build/flutter-build.yml .github/workflows/build.yml
+# 1. 创建工作流文件
+vim .github/workflows/build.yml
 
-# 2. 根据需要自定义（可选）
+# 2. 让 AI 帮你编写或直接编写工作流内容
 vim .github/workflows/build.yml
 
 # 3. 复制本地构建脚本
@@ -72,10 +75,10 @@ bash scripts/flutter-build.sh --platform android --mode release
 ### 场景 2：Node.js 项目
 
 ```bash
-# 1. 复制模板
-cp core/templates/build/nodejs-build.yml .github/workflows/build.yml
+# 1. 创建工作流文件
+vim .github/workflows/build.yml
 
-# 2. 自定义配置
+# 2. 编写或让 AI 帮你编写工作流
 vim .github/workflows/build.yml
 # 修改 Node.js 版本、测试命令等
 ```
@@ -206,23 +209,22 @@ bash scripts/flutter-build.sh --help
 ### 查看模板
 
 ```bash
-# 列出所有模板
-find core/templates -name "*.yml"
+# 查看已安装的规则文件
+ls -la .cursor/rules/github-actions/
 
-# 查看模板内容
-cat core/templates/build/flutter-build.yml
+# 查看工具版本
+./scripts/toolsets/github-actions/gh-action-debug version
 ```
 
 ## 🎨 完整示例：Flutter 项目
 
 ```bash
-# 1. 安装工具集
+# 1. 安装工具集（手动安装）
 cd /path/to/your-flutter-project
-bash /path/to/GithubActionAISelfBuilder/core/scripts/install.sh
+# 参考 docs/INSTALL.md 中的手动安装步骤
 
-# 2. 复制文件
-cp /path/to/GithubActionAISelfBuilder/core/templates/build/flutter-build.yml \
-   .github/workflows/build.yml
+# 2. 创建工作流文件（让 AI 帮你编写或手动编写）
+vim .github/workflows/build.yml
 cp /path/to/GithubActionAISelfBuilder/scripts/flutter-build.sh \
    scripts/
 
@@ -252,8 +254,7 @@ gh auth status  # 验证
 ### 问题 2：gh-action-debug 未找到
 
 ```bash
-# 重新安装
-bash /path/to/GithubActionAISelfBuilder/core/scripts/install.sh
+# 重新安装（参考 docs/INSTALL.md 中的手动安装步骤）
 
 # 或手动构建
 cd /path/to/GithubActionAISelfBuilder/core/tools/go

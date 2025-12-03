@@ -4,14 +4,13 @@
 
 安装工具集后，AI 助手会自动了解如何处理 GitHub Actions。
 
-### 1. 使用模板创建工作流
+### 1. 创建工作流
 
 ```bash
-# 复制 Flutter 构建模板
-cp core/templates/build/flutter-build.yml .github/workflows/build.yml
-
-# 根据项目需求自定义
+# 创建工作流文件
 vim .github/workflows/build.yml
+
+# 让 AI 帮你编写或直接编写工作流内容
 ```
 
 ### 2. 使用 Go 工具调试工作流
@@ -119,38 +118,21 @@ bash scripts/flutter-build.sh --help
 - 平台构建
 - 错误处理
 
-### 模板库
+### 创建工作流
 
-工具集提供常用的工作流模板：
+AI 助手会根据规则和最佳实践帮你创建工作流。你可以：
 
-#### 构建模板
-
-- `build/flutter-build.yml` - Flutter 多平台构建
-- `build/nodejs-build.yml` - Node.js 项目构建
-- `build/python-build.yml` - Python 项目构建
-
-#### 测试模板
-
-- `test/pytest.yml` - Python 测试
-
-#### 发布模板
-
-- `release/github-release.yml` - GitHub Release 发布
-
-#### 部署模板
-
-- `deployment/deploy-npm.yml` - npm 包发布
-
-**位置**: `core/templates/`
+1. **直接告诉 AI**："帮我创建一个 Flutter 构建工作流"
+2. **手动创建**：创建 `.github/workflows/build.yml` 文件，让 AI 帮你完善
+3. **参考规则**：AI 会遵循 `core/rules/` 中的规则和最佳实践
 
 **使用方式**：
 
 ```bash
-# 1. 复制模板到项目
-cp core/templates/build/flutter-build.yml .github/workflows/build.yml
-
-# 2. 根据需求自定义
+# 1. 创建工作流文件
 vim .github/workflows/build.yml
+
+# 2. 让 AI 帮你编写或直接编写
 
 # 3. 提交并推送
 git add .github/workflows/build.yml
@@ -166,10 +148,12 @@ gh-action-debug workflow debug .github/workflows/build.yml main --output json
 ### 创建 Flutter 构建工作流
 
 ```bash
-# 1. 复制模板
-cp core/templates/build/flutter-build.yml .github/workflows/build.yml
+# 1. 创建工作流文件
+vim .github/workflows/build.yml
 
-# 2. 推送并测试
+# 2. 让 AI 帮你编写或直接编写
+
+# 3. 推送并测试
 git add .github/workflows/build.yml
 git commit -m "Add Flutter build workflow"
 git push
@@ -247,10 +231,10 @@ AI 会自动：
 ### 1. 从模板开始
 
 ```bash
-# ✅ 推荐：使用模板
-cp core/templates/build/flutter-build.yml .github/workflows/build.yml
+# ✅ 推荐：让 AI 帮你创建工作流（遵循规则和最佳实践）
+# 直接告诉 AI："帮我创建一个 Flutter 构建工作流"
 
-# ❌ 避免：从头编写
+# ❌ 避免：不遵循规则和最佳实践
 vim .github/workflows/build.yml  # 从空白开始
 ```
 
@@ -297,8 +281,8 @@ gh run view --log-failed
 ### gh-action-debug 工具未找到
 
 ```bash
-# 方案 1: 重新安装
-bash core/scripts/install.sh
+# 方案 1: 重新复制文件
+# 参考 docs/INSTALL.md 中的手动安装步骤
 
 # 方案 2: 手动构建
 cd core/tools/go

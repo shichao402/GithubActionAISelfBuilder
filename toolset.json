@@ -39,13 +39,7 @@
         "install_url": "https://cli.github.com/",
         "description": "GitHub CLI - 用于调试和触发工作流"
       }
-    ],
-    "environment": {
-      "GITHUB_TOKEN": {
-        "required": false,
-        "description": "GitHub Personal Access Token（可选，工具会自动从 gh CLI 获取）"
-      }
-    }
+    ]
   },
   
   "install": {
@@ -62,16 +56,7 @@
         "files": ["gh-action-debug-*"],
         "executable": true,
         "description": "Go 调试工具（自动检测平台并复制对应二进制文件）"
-      },
-      ".github/templates/": {
-        "source": "core/templates/",
-        "files": ["**/*.yml", "**/*.yaml"],
-        "description": "GitHub Actions Workflow 模板"
       }
-    },
-    "npm_scripts": {
-      "ai-debug": "./scripts/toolsets/github-actions/gh-action-debug workflow debug",
-      "workflow-list": "./scripts/toolsets/github-actions/gh-action-debug workflow list"
     }
   },
   
@@ -89,18 +74,10 @@
       "description": "一键触发、监控和调试 GitHub Actions 工作流（Go 实现，高性能，跨平台）",
       "files": ["core/tools/go/cmd/gh-action-debug/main.go"],
       "essential": true
-    },
-    {
-      "id": "templates",
-      "name": "Workflow 模板库",
-      "description": "常用的 GitHub Actions 工作流模板（构建、测试、发布、部署）",
-      "files": ["core/templates/**/*.yml"],
-      "essential": true
     }
   ],
   
   "scripts": {
-    "install": "bash core/scripts/install.sh",
     "validate": "bash core/tools/go/test-verify.sh"
   },
   

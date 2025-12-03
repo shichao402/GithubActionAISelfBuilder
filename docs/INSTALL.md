@@ -2,78 +2,86 @@
 
 ## 快速安装
 
-### 方式 1: 一键安装（推荐）
+### 方式 1: Git Submodule（推荐）
 
 ```bash
-curl -sL https://raw.githubusercontent.com/firoyang/github-action-toolset/main/core/scripts/install.sh | bash
+# 1. 添加子模块
+git submodule add https://github.com/shichao402/GithubActionAISelfBuilder.git .toolsets/github-actions
+
+# 2. 手动安装：复制规则文件和工具
+# 复制规则文件
+mkdir -p .cursor/rules/github-actions
+cp .toolsets/github-actions/core/rules/*.mdc .cursor/rules/github-actions/
+
+# 复制 Go 工具（自动检测平台）
+mkdir -p scripts/toolsets/github-actions
+PLATFORM=$(uname -s | tr '[:upper:]' '[:lower:]')
+ARCH=$(uname -m)
+if [ "$ARCH" = "x86_64" ]; then
+    ARCH="amd64"
+elif [ "$ARCH" = "arm64" ] || [ "$ARCH" = "aarch64" ]; then
+    ARCH="arm64"
+fi
+cp .toolsets/github-actions/core/tools/go/dist/gh-action-debug-${PLATFORM}-${ARCH} \
+   scripts/toolsets/github-actions/gh-action-debug
+chmod +x scripts/toolsets/github-actions/gh-action-debug
 ```
 
-### 方式 2: Git Submodule
+### 方式 2: 手动克隆
 
 ```bash
-# 添加子模块
-git submodule add https://github.com/firoyang/github-action-toolset .toolsets/github-actions
+# 1. 克隆仓库
+git clone https://github.com/shichao402/GithubActionAISelfBuilder.git /tmp/gh-toolset
 
-# 运行安装脚本
-bash .toolsets/github-actions/core/scripts/install.sh
-```
+# 2. 复制规则文件
+mkdir -p .cursor/rules/github-actions
+cp /tmp/gh-toolset/core/rules/*.mdc .cursor/rules/github-actions/
 
-### 方式 3: 手动安装
+# 3. 复制 Go 工具
+mkdir -p scripts/toolsets/github-actions
+PLATFORM=$(uname -s | tr '[:upper:]' '[:lower:]')
+ARCH=$(uname -m)
+if [ "$ARCH" = "x86_64" ]; then
+    ARCH="amd64"
+elif [ "$ARCH" = "arm64" ] || [ "$ARCH" = "aarch64" ]; then
+    ARCH="arm64"
+fi
+cp /tmp/gh-toolset/core/tools/go/dist/gh-action-debug-${PLATFORM}-${ARCH} \
+   scripts/toolsets/github-actions/gh-action-debug
+chmod +x scripts/toolsets/github-actions/gh-action-debug
 
-```bash
-# 克隆仓库
-git clone https://github.com/firoyang/github-action-toolset /tmp/gh-toolset
-
-# 运行安装脚本
-bash /tmp/gh-toolset/core/scripts/install.sh
-
-# 清理临时文件
+# 4. 清理临时文件
 rm -rf /tmp/gh-toolset
 ```
 
 ## 安装内容
 
-安装脚本会自动：
+手动安装需要复制以下内容：
 
-1. **检查依赖**
-   - GitHub CLI (gh) - 必需
-   - Python 3.8+ - 可选
+1. **AI 规则文件** → `.cursor/rules/github-actions/`
+   - `github-actions.mdc`
+   - `debugging.mdc`
+   - `best-practices.mdc`
 
-2. **复制规则文件**
-   - 复制到 `.cursor/rules/github-actions/`
-   - 包含：github-actions.mdc, debugging.mdc, best-practices.mdc
-
-3. **安装 Go 调试工具**
-   - 复制到 `scripts/toolsets/github-actions/`
-   - 包含：
-     - `gh-action-debug` - Go 调试工具（单一可执行文件）
-
-4. **复制模板文件**
-   - 复制到 `.github/templates/`
-   - 包含：构建、测试、发布、部署模板
-
-5. **配置 npm scripts**（如果有 package.json）
-   - 添加便捷的 npm 命令
+2. **Go 调试工具** → `scripts/toolsets/github-actions/gh-action-debug`
+   - 从 `core/tools/go/dist/` 复制对应平台的二进制文件
+   - 平台格式：`gh-action-debug-{platform}-{arch}`
+   - 例如：`gh-action-debug-darwin-amd64`, `gh-action-debug-linux-arm64`
 
 ## 验证安装
 
 ```bash
 # 检查规则文件
 ls -la .cursor/rules/github-actions/
+# 应该看到：github-actions.mdc, debugging.mdc, best-practices.mdc
 
-# 检查工具脚本
-ls -la scripts/toolsets/github-actions/
-
-# 检查 Go 工具
+# 检查工具
 ./scripts/toolsets/github-actions/gh-action-debug version
 # 或（如果已安装到系统）
 gh-action-debug version
 
-# 检查模板
-ls -la .github/templates/
-
 # 列出工作流（测试工具）
-gh-action-debug workflow list
+./scripts/toolsets/github-actions/gh-action-debug workflow list
 ```
 
 ## 依赖要求
@@ -90,19 +98,31 @@ gh-action-debug workflow list
 - **gh-action-debug (Go 工具)**: 自动化调试工具（强烈推荐）
   - 单一可执行文件，无需额外依赖
   - 性能优异，AI 友好
-  - 会自动安装（如果工具集包含预编译版本）
-
-### 可选
-
-- **Node.js**: 用于 npm scripts（如果项目使用 Node.js）
+  - 工具集包含预编译版本
 
 ## Go 工具安装
 
-### 自动安装（推荐）
+### 使用工具集中的预编译版本（推荐）
 
-安装脚本会自动检测系统并安装对应的 Go 工具二进制文件。
+工具集包含常见平台的预编译版本，直接复制即可：
 
-### 手动安装到系统
+```bash
+# 检测平台并复制
+PLATFORM=$(uname -s | tr '[:upper:]' '[:lower:]')
+ARCH=$(uname -m)
+if [ "$ARCH" = "x86_64" ]; then
+    ARCH="amd64"
+elif [ "$ARCH" = "arm64" ] || [ "$ARCH" = "aarch64" ]; then
+    ARCH="arm64"
+fi
+
+mkdir -p scripts/toolsets/github-actions
+cp .toolsets/github-actions/core/tools/go/dist/gh-action-debug-${PLATFORM}-${ARCH} \
+   scripts/toolsets/github-actions/gh-action-debug
+chmod +x scripts/toolsets/github-actions/gh-action-debug
+```
+
+### 安装到系统 PATH
 
 如果需要将 Go 工具安装到系统 PATH：
 
@@ -116,16 +136,16 @@ bash install.sh
 
 ### 从源码构建
 
-如果没有预编译版本：
+如果没有预编译版本或需要自定义构建：
 
 ```bash
-cd .toolsets/github-action-toolset/core/tools/go
+cd .toolsets/github-actions/core/tools/go
 
-# 下载依赖并构建
-bash build-verify.sh
+# 构建当前平台
+make build
 
 # 构建所有平台
-bash build-all.sh
+make build-all
 
 # 安装到系统
 bash install.sh
@@ -170,7 +190,11 @@ Go 工具会按以下顺序查找配置：
 # 手动删除安装的文件
 rm -rf .cursor/rules/github-actions
 rm -rf scripts/toolsets/github-actions
-rm -rf .github/templates
+
+# 删除 Git Submodule（如果使用）
+git submodule deinit -f .toolsets/github-actions
+git rm -f .toolsets/github-actions
+rm -rf .git/modules/.toolsets/github-actions
 
 # 删除 Go 工具（如果安装到系统）
 sudo rm -f /usr/local/bin/gh-action-debug
@@ -183,10 +207,22 @@ sudo rm -f /usr/local/bin/gh-action-debug
 cd .toolsets/github-actions
 git pull origin main
 cd ../..
-bash .toolsets/github-actions/core/scripts/install.sh
 
-# 如果手动安装
-curl -sL https://raw.githubusercontent.com/firoyang/github-action-toolset/main/core/scripts/install.sh | bash
+# 重新复制文件
+mkdir -p .cursor/rules/github-actions
+cp .toolsets/github-actions/core/rules/*.mdc .cursor/rules/github-actions/
+
+# 重新复制 Go 工具
+PLATFORM=$(uname -s | tr '[:upper:]' '[:lower:]')
+ARCH=$(uname -m)
+if [ "$ARCH" = "x86_64" ]; then
+    ARCH="amd64"
+elif [ "$ARCH" = "arm64" ] || [ "$ARCH" = "aarch64" ]; then
+    ARCH="arm64"
+fi
+cp .toolsets/github-actions/core/tools/go/dist/gh-action-debug-${PLATFORM}-${ARCH} \
+   scripts/toolsets/github-actions/gh-action-debug
+chmod +x scripts/toolsets/github-actions/gh-action-debug
 ```
 
 ## 故障排除
@@ -224,7 +260,7 @@ gh auth login
 export GITHUB_TOKEN=your_token_here
 ```
 
-### 问题 3: Go 工具未安装
+### 问题 3: Go 工具未找到
 
 **错误信息**：
 ```
@@ -242,7 +278,7 @@ bash install.sh
 
 # 或从源码构建
 cd .toolsets/github-actions/core/tools/go
-bash build-verify.sh
+make build
 bash install.sh
 ```
 
@@ -276,4 +312,3 @@ EOF
 - [使用指南](USAGE.md) - 如何使用工具集
 - [快速开始](guides/quickstart.md) - 快速上手
 - [Go 工具文档](../core/tools/go/README.md) - Go 工具详细说明
-- [示例](examples/) - 实际示例

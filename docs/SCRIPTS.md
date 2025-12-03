@@ -13,10 +13,6 @@ GithubActionAISelfBuilder/
 │   │   └── README.md
 │   └── README.md
 │
-├── core/scripts/                     # 🔧 工具集安装脚本（会输出）
-│   ├── install.sh                   # 安装工具集到目标项目
-│   └── README.md
-│
 └── core/tools/go/                    # 🛠️  Go 工具开发脚本（不输出）
     ├── install.sh                    # 安装工具到系统 PATH
     ├── build-all.sh                  # 跨平台构建
@@ -48,41 +44,14 @@ bash scripts/maintenance/cleanup.sh
 
 ---
 
-### 2. 工具集安装脚本 (`core/scripts/`)
-
-**用途**: 将工具集安装到目标项目
-
-**特点**:
-- ✅ **会输出**到其他项目
-- ✅ 核心功能
-- ✅ 通过 Git Submodule 使用
-
-**脚本**:
-- `install.sh` - 安装工具集到目标项目
-
-**安装内容**:
-1. AI 规则文件 → `.cursor/rules/github-actions/`
-2. Go 调试工具 → `scripts/toolsets/github-actions/gh-action-debug`
-3. Workflow 模板 → `.github/templates/`
-
-**使用场景**:
-```bash
-# 在其他项目中使用
-cd /path/to/your/project
-git submodule add https://github.com/firoyang/github-action-toolset .toolsets/github-actions
-bash .toolsets/github-actions/core/scripts/install.sh
-```
-
----
-
-### 3. Go 工具开发脚本 (`core/tools/go/`)
+### 2. Go 工具开发脚本 (`core/tools/go/`)
 
 **用途**: 开发、构建、测试 `gh-action-debug` 工具
 
 **特点**:
 - ❌ **不输出**到其他项目
 - ✅ 开发工具集时使用
-- ✅ 构建产物会被 `core/scripts/install.sh` 使用
+- ✅ 构建产物在 `core/tools/go/dist/` 目录
 
 **脚本**:
 - `install.sh` - 将工具安装到系统 PATH (`/usr/local/bin`)
@@ -111,7 +80,6 @@ bash build-verify.sh # 验证构建
 | 脚本路径 | 用途 | 输出到其他项目 | 使用场景 |
 |---------|------|--------------|---------|
 | `scripts/maintenance/cleanup.sh` | 清理旧文件 | ❌ | 项目维护 |
-| `core/scripts/install.sh` | 安装工具集 | ✅ | 在其他项目中使用工具集 |
 | `core/tools/go/install.sh` | 安装工具到系统 | ❌ | 开发时测试工具 |
 | `core/tools/go/build-all.sh` | 跨平台构建 | ❌ | 发布新版本 |
 | `core/tools/go/build-verify.sh` | 验证构建 | ❌ | 发布前验证 |
@@ -160,8 +128,7 @@ git push
 cd /path/to/your/project
 git submodule add https://github.com/firoyang/github-action-toolset .toolsets/github-actions
 
-# 2. 安装工具集
-bash .toolsets/github-actions/core/scripts/install.sh
+# 2. 手动安装工具集（参考 docs/INSTALL.md）
 
 # 3. 使用工具
 ./scripts/toolsets/github-actions/gh-action-debug workflow list
@@ -170,7 +137,6 @@ bash .toolsets/github-actions/core/scripts/install.sh
 ## 📚 相关文档
 
 - **项目维护脚本**: `scripts/README.md`
-- **工具集安装脚本**: `core/scripts/README.md`
 - **Go 工具开发脚本**: `core/tools/go/SCRIPTS.md`
 - **安装指南**: `docs/INSTALL.md`
 - **使用指南**: `docs/USAGE.md`

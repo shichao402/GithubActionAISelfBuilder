@@ -62,24 +62,38 @@ Go 编写的 GitHub Actions 调试工具：
 # 克隆工具集到你的项目
 git submodule add https://github.com/firoyang/github-action-toolset .toolsets/github-actions
 
-# 安装（会复制规则、模板，构建 Go 工具）
-bash .toolsets/github-actions/core/scripts/install.sh
+# 手动安装：复制规则文件和工具
+# 1. 复制规则文件
+mkdir -p .cursor/rules/github-actions
+cp .toolsets/github-actions/core/rules/*.mdc .cursor/rules/github-actions/
+
+# 2. 复制 Go 工具（自动检测平台）
+mkdir -p scripts/toolsets/github-actions
+# 检测平台并复制对应的二进制文件
+PLATFORM=$(uname -s | tr '[:upper:]' '[:lower:]')
+ARCH=$(uname -m)
+if [ "$ARCH" = "x86_64" ]; then
+    ARCH="amd64"
+elif [ "$ARCH" = "arm64" ] || [ "$ARCH" = "aarch64" ]; then
+    ARCH="arm64"
+fi
+cp .toolsets/github-actions/core/tools/go/dist/gh-action-debug-${PLATFORM}-${ARCH} \
+   scripts/toolsets/github-actions/gh-action-debug
+chmod +x scripts/toolsets/github-actions/gh-action-debug
 ```
 
 安装后你会得到：
-- ✅ AI 规则文件 → `core/rules/*.mdc`
+- ✅ AI 规则文件 → `.cursor/rules/github-actions/*.mdc`
 - ✅ Go 调试工具 → `scripts/toolsets/github-actions/gh-action-debug`
-- ✅ Workflow 模板 → `core/templates/`
 
 ### 使用
 
 #### 1. 创建工作流
 
-```bash
-# 复制模板
-cp core/templates/build/flutter-build.yml .github/workflows/build.yml
+直接创建或让 AI 帮你创建工作流文件：
 
-# 根据需求自定义
+```bash
+# 创建新的工作流文件
 vim .github/workflows/build.yml
 ```
 
@@ -111,10 +125,9 @@ gh-action-debug workflow debug .github/workflows/build.yml main \
 ```
 
 AI 会自动：
-1. 使用模板
-2. 遵循最佳实践
-3. 使用 gh-action-debug 调试
-4. 提供修复建议
+1. 遵循最佳实践创建工作流
+2. 使用 gh-action-debug 调试
+3. 提供修复建议
 
 ## 📁 项目结构
 
@@ -125,13 +138,6 @@ AI 会自动：
 │   │   ├── github-actions.mdc
 │   │   ├── debugging.mdc
 │   │   └── best-practices.mdc
-│   ├── templates/             # Workflow 模板
-│   │   ├── build/
-│   │   ├── test/
-│   │   ├── release/
-│   │   └── deployment/
-│   ├── scripts/               # 安装脚本
-│   │   └── install.sh
 │   └── tools/                 # 工具源码
 │       └── go/                # gh-action-debug 源码
 ├── scripts/                   # 本地构建脚本
@@ -194,7 +200,7 @@ bash scripts/flutter-build.sh --help
 ```
 
 **AI 会**：
-1. ✅ 复制 `core/templates/build/flutter-build.yml`
+1. ✅ 遵循规则和最佳实践创建工作流
 2. ✅ 自定义配置（平台、版本等）
 3. ✅ 推送代码到远程
 4. ✅ 运行 `gh-action-debug workflow debug ...`
@@ -227,18 +233,16 @@ make test
 make install
 ```
 
-### 添加新模板
+### 更新规则文件
 
 ```bash
-# 1. 在 core/templates/ 下创建模板
-vim core/templates/build/my-template.yml
+# 1. 修改规则文件
+vim core/rules/github-actions.mdc
+vim core/rules/debugging.mdc
+vim core/rules/best-practices.mdc
 
-# 2. 更新 core/templates/README.md
-vim core/templates/README.md
-
-# 3. 测试模板
-cp core/templates/build/my-template.yml .github/workflows/test.yml
-gh-action-debug workflow debug .github/workflows/test.yml main --output json
+# 2. 测试规则（在本项目中测试）
+# 规则会通过软链接立即生效
 ```
 
 ### 添加新规则

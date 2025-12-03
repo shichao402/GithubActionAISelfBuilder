@@ -7,21 +7,18 @@
 ```
 core/
 ├── rules/          # AI 规则文件（.mdc）
-├── scripts/        # 工具脚本（.py, .sh, .ps1）
-└── templates/      # GitHub Actions 模板（.yml）
-    ├── build/      # 构建相关模板
-    ├── test/       # 测试相关模板
-    ├── release/    # 发布相关模板
-    └── deployment/ # 部署相关模板
+└── tools/          # 工具源码
+    └── go/         # Go 调试工具源码
 ```
 
 ## 🎯 用途
 
-当用户将此工具集安装到新项目时，`core/` 目录下的内容会被复制到目标项目的相应位置：
+当用户将此工具集安装到新项目时，需要手动复制 `core/` 目录下的内容到目标项目的相应位置：
 
 - `core/rules/*.mdc` → `.cursor/rules/github-actions/`
-- `core/scripts/*` → `scripts/toolsets/github-actions/`
-- `core/templates/**/*.yml` → `.github/templates/`
+- `core/tools/go/dist/gh-action-debug-*` → `scripts/toolsets/github-actions/gh-action-debug`
+
+详细安装步骤请参考 `docs/INSTALL.md`。
 
 ## 📝 注意事项
 
