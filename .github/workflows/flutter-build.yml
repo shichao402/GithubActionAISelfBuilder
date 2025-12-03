@@ -114,7 +114,12 @@ jobs:
         working-directory: dev/test-project/flutter-demo
         shell: bash
         run: |
-          flutter build ${{ matrix.platform }} --${{ matrix.build-mode }}
+          # Android 需要使用 apk 或 appbundle，这里使用 apk
+          if [ "${{ matrix.platform }}" = "android" ]; then
+            flutter build apk --${{ matrix.build-mode }}
+          else
+            flutter build ${{ matrix.platform }} --${{ matrix.build-mode }}
+          fi
         env:
           # Android 签名配置（如果需要）
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
