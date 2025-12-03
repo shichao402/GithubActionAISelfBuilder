@@ -53,21 +53,9 @@ jobs:
           - os: ubuntu-latest
             platform: android
             build-mode: release
-          # iOS 构建（需要 macOS）
-          - os: macos-latest
-            platform: ios
-            build-mode: release
-          # Web 构建
-          - os: ubuntu-latest
-            platform: web
-            build-mode: release
           # Windows 构建
           - os: windows-latest
             platform: windows
-            build-mode: release
-          # Linux 构建
-          - os: ubuntu-latest
-            platform: linux
             build-mode: release
           # macOS 构建
           - os: macos-latest
