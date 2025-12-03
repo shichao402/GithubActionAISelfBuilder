@@ -35,6 +35,7 @@ type ErrorInfo struct {
 	Job         string   `json:"job"`
 	Step        string   `json:"step"`
 	ErrorType   string   `json:"error_type"`
+	Category    string   `json:"category,omitempty"` // 错误分类
 	Message     string   `json:"message"`
 	Suggestions []string `json:"suggestions"`
 }

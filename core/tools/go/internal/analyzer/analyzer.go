@@ -54,6 +54,7 @@ func (a *Analyzer) analyzeStepLogs(jobName string, step types.Step) *types.Error
 			Job:       jobName,
 			Step:      step.Name,
 			ErrorType: "unknown",
+			Category:  "unknown",
 			Message:   "Step failed but no logs available",
 			Suggestions: []string{
 				"Check the workflow logs manually",
@@ -77,6 +78,7 @@ func (a *Analyzer) analyzeStepLogs(jobName string, step types.Step) *types.Error
 			Job:         jobName,
 			Step:        step.Name,
 			ErrorType:   pattern.Type,
+			Category:    pattern.Category,
 			Message:     message,
 			Suggestions: pattern.Suggestions(matches),
 		}
@@ -89,6 +91,7 @@ func (a *Analyzer) analyzeStepLogs(jobName string, step types.Step) *types.Error
 		Job:       jobName,
 		Step:      step.Name,
 		ErrorType: "unknown",
+		Category:  "unknown",
 		Message:   errorMessage,
 		Suggestions: []string{
 			"Check the full logs for more details",
