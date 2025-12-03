@@ -18,35 +18,35 @@
 
 ```bash
 # macOS (Intel)
-curl -L https://github.com/firoyang/github-action-toolset/releases/download/v1.0.0/gh-action-debug-darwin-amd64 -o gh-action-debug
+curl -L https://github.com/shichao402/GithubActionAISelfBuilder/releases/download/v1.0.0/gh-action-debug-darwin-amd64 -o gh-action-debug
 chmod +x gh-action-debug
 sudo mv gh-action-debug /usr/local/bin/
 
 # macOS (M1/M2)
-curl -L https://github.com/firoyang/github-action-toolset/releases/download/v1.0.0/gh-action-debug-darwin-arm64 -o gh-action-debug
+curl -L https://github.com/shichao402/GithubActionAISelfBuilder/releases/download/v1.0.0/gh-action-debug-darwin-arm64 -o gh-action-debug
 chmod +x gh-action-debug
 sudo mv gh-action-debug /usr/local/bin/
 
 # Linux
-curl -L https://github.com/firoyang/github-action-toolset/releases/download/v1.0.0/gh-action-debug-linux-amd64 -o gh-action-debug
+curl -L https://github.com/shichao402/GithubActionAISelfBuilder/releases/download/v1.0.0/gh-action-debug-linux-amd64 -o gh-action-debug
 chmod +x gh-action-debug
 sudo mv gh-action-debug /usr/local/bin/
 
 # Windows (PowerShell)
-Invoke-WebRequest -Uri "https://github.com/firoyang/github-action-toolset/releases/download/v1.0.0/gh-action-debug-windows-amd64.exe" -OutFile "gh-action-debug.exe"
+Invoke-WebRequest -Uri "https://github.com/shichao402/GithubActionAISelfBuilder/releases/download/v1.0.0/gh-action-debug-windows-amd64.exe" -OutFile "gh-action-debug.exe"
 ```
 
 #### 使用 go install
 
 ```bash
-go install github.com/firoyang/github-action-toolset/cmd/gh-action-debug@latest
+go install github.com/shichao402/GithubActionAISelfBuilder/core/tools/go/cmd/gh-action-debug@latest
 ```
 
 #### 从源码构建
 
 ```bash
-git clone https://github.com/firoyang/github-action-toolset
-cd github-action-toolset/core/tools/go
+git clone https://github.com/shichao402/GithubActionAISelfBuilder.git
+cd GithubActionAISelfBuilder/core/tools/go
 make install
 ```
 
@@ -253,7 +253,7 @@ MIT License
 ## 🔗 相关链接
 
 - [设计文档](DESIGN.md)
-- [项目主页](https://github.com/firoyang/github-action-toolset)
-- [问题追踪](https://github.com/firoyang/github-action-toolset/issues)
+- [项目主页](https://github.com/shichao402/GithubActionAISelfBuilder)
+- [问题追踪](https://github.com/shichao402/GithubActionAISelfBuilder/issues)
 
 

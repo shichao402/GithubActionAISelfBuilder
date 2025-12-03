@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/firoyang/github-action-toolset/internal/config"
-	"github.com/firoyang/github-action-toolset/pkg/types"
+	"github.com/shichao402/GithubActionAISelfBuilder/core/tools/go/internal/config"
+	"github.com/shichao402/GithubActionAISelfBuilder/core/tools/go/pkg/types"
 )
 
 // Client GitHub API 客户端接口
@@ -295,5 +295,3 @@ func (c *client) executeGHCommandWithOutput(args ...string) (string, error) {
 
 	return strings.TrimSpace(string(output)), nil
 }
-
-

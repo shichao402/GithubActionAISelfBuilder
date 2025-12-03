@@ -378,16 +378,16 @@ clean:
 
 ```bash
 # 方式 1: 直接下载二进制文件
-curl -L https://github.com/firoyang/github-action-toolset/releases/download/v1.0.0/gh-action-debug-$(uname -s)-$(uname -m) -o gh-action-debug
+curl -L https://github.com/shichao402/GithubActionAISelfBuilder/releases/download/v1.0.0/gh-action-debug-$(uname -s)-$(uname -m) -o gh-action-debug
 chmod +x gh-action-debug
 sudo mv gh-action-debug /usr/local/bin/
 
 # 方式 2: 使用 go install
-go install github.com/firoyang/github-action-toolset/cmd/gh-action-debug@latest
+go install github.com/shichao402/GithubActionAISelfBuilder/core/tools/go/cmd/gh-action-debug@latest
 
 # 方式 3: 从源码构建
-git clone https://github.com/firoyang/github-action-toolset
-cd github-action-toolset/core/tools/go
+git clone https://github.com/shichao402/GithubActionAISelfBuilder.git
+cd GithubActionAISelfBuilder/core/tools/go
 make install
 ```
 
@@ -418,7 +418,7 @@ gh-action-debug workflow debug .github/workflows/build.yml main --output json
 
 ```go
 // go.mod
-module github.com/firoyang/github-action-toolset
+module github.com/shichao402/GithubActionAISelfBuilder/core/tools/go
 
 go 1.21
 

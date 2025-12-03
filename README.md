@@ -3,7 +3,7 @@
 > 一套 GitHub Actions 规则 + 工具集合，让 AI 自动遵循最佳实践
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/firoyang/github-action-toolset)
+[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/shichao402/GithubActionAISelfBuilder)
 
 ## 🎯 这是什么
 
@@ -60,7 +60,7 @@ Go 编写的 GitHub Actions 调试工具：
 
 ```bash
 # 克隆工具集到你的项目
-git submodule add https://github.com/firoyang/github-action-toolset .toolsets/github-actions
+git submodule add https://github.com/shichao402/GithubActionAISelfBuilder.git .toolsets/github-actions
 
 # 手动安装：复制规则文件和工具
 # 1. 复制规则文件

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/firoyang/github-action-toolset/pkg/types"
+	"github.com/shichao402/GithubActionAISelfBuilder/core/tools/go/pkg/types"
 )
 
 // FormatHuman 格式化为人类可读的输出

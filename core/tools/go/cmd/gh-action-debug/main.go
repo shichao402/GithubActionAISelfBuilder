@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/firoyang/github-action-toolset/internal/config"
-	"github.com/firoyang/github-action-toolset/internal/debugger"
-	"github.com/firoyang/github-action-toolset/internal/github"
-	"github.com/firoyang/github-action-toolset/internal/output"
-	"github.com/firoyang/github-action-toolset/pkg/types"
+	"github.com/shichao402/GithubActionAISelfBuilder/core/tools/go/internal/config"
+	"github.com/shichao402/GithubActionAISelfBuilder/core/tools/go/internal/debugger"
+	"github.com/shichao402/GithubActionAISelfBuilder/core/tools/go/internal/github"
+	"github.com/shichao402/GithubActionAISelfBuilder/core/tools/go/internal/output"
+	"github.com/shichao402/GithubActionAISelfBuilder/core/tools/go/pkg/types"
 	"github.com/spf13/cobra"
 )
 
@@ -51,7 +51,7 @@ var rootCmd = &cobra.Command{
   # JSON 输出（供 AI 使用）
   gh-action-debug workflow debug .github/workflows/build.yml main --output json
 
-更多信息: https://github.com/firoyang/github-action-toolset`,
+更多信息: https://github.com/shichao402/GithubActionAISelfBuilder`,
 	Version: Version,
 }
 

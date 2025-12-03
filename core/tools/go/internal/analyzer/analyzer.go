@@ -3,7 +3,7 @@ package analyzer
 import (
 	"strings"
 
-	"github.com/firoyang/github-action-toolset/pkg/types"
+	"github.com/shichao402/GithubActionAISelfBuilder/core/tools/go/pkg/types"
 )
 
 // Analyzer 错误分析器
@@ -67,7 +67,7 @@ func (a *Analyzer) analyzeStepLogs(jobName string, step types.Step) *types.Error
 	pattern := MatchPattern(step.Logs)
 	if pattern != nil {
 		matches := ExtractMatches(pattern, step.Logs)
-		
+
 		// 提取错误消息（通常是第一个匹配）
 		message := pattern.Description
 		if len(matches) > 0 {
@@ -86,7 +86,7 @@ func (a *Analyzer) analyzeStepLogs(jobName string, step types.Step) *types.Error
 
 	// 如果没有匹配到已知模式，提取关键错误信息
 	errorMessage := extractErrorMessage(step.Logs)
-	
+
 	return &types.ErrorInfo{
 		Job:       jobName,
 		Step:      step.Name,
@@ -104,7 +104,7 @@ func (a *Analyzer) analyzeStepLogs(jobName string, step types.Step) *types.Error
 // extractErrorMessage 从日志中提取错误消息
 func extractErrorMessage(logs string) string {
 	lines := strings.Split(logs, "\n")
-	
+
 	// 查找包含 "error", "Error", "ERROR" 的行
 	for _, line := range lines {
 		lower := strings.ToLower(line)
@@ -116,7 +116,7 @@ func extractErrorMessage(logs string) string {
 			return strings.TrimSpace(line)
 		}
 	}
-	
+
 	// 如果没找到错误行，返回最后几行（通常错误在末尾）
 	if len(lines) > 0 {
 		// 返回最后一行非空行
@@ -127,7 +127,7 @@ func extractErrorMessage(logs string) string {
 			}
 		}
 	}
-	
+
 	return "Step failed with unknown error"
 }
 
@@ -155,7 +155,7 @@ func (a *Analyzer) GenerateSummary(errors []types.ErrorInfo) string {
 		summary.WriteString("   Message: ")
 		summary.WriteString(err.Message)
 		summary.WriteString("\n")
-		
+
 		if len(err.Suggestions) > 0 {
 			summary.WriteString("   Suggestions:\n")
 			for _, suggestion := range err.Suggestions {
@@ -164,7 +164,7 @@ func (a *Analyzer) GenerateSummary(errors []types.ErrorInfo) string {
 				summary.WriteString("\n")
 			}
 		}
-		
+
 		if i < len(errors)-1 {
 			summary.WriteString("\n")
 		}
@@ -172,5 +172,3 @@ func (a *Analyzer) GenerateSummary(errors []types.ErrorInfo) string {
 
 	return summary.String()
 }
-
-

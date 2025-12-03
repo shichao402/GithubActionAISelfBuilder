@@ -3,7 +3,7 @@ package github
 import (
 	"testing"
 
-	"github.com/firoyang/github-action-toolset/internal/config"
+	"github.com/shichao402/GithubActionAISelfBuilder/core/tools/go/internal/config"
 )
 
 func TestNewClient(t *testing.T) {
@@ -98,5 +98,3 @@ func TestParseGitURL(t *testing.T) {
 		})
 	}
 }
-
-

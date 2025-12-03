@@ -57,6 +57,10 @@
         "executable": true,
         "description": "Go 调试工具（自动检测平台并复制对应二进制文件）"
       }
+    },
+    "npm_scripts": {
+      "ai-debug": "./scripts/toolsets/github-actions/gh-action-debug workflow debug",
+      "workflow-list": "./scripts/toolsets/github-actions/gh-action-debug workflow list"
     }
   },
   
@@ -78,6 +82,7 @@
   ],
   
   "scripts": {
+    "install": "bash core/scripts/install.sh",
     "validate": "bash core/tools/go/test-verify.sh"
   },
   

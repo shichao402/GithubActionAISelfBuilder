@@ -3,10 +3,10 @@ package debugger
 import (
 	"fmt"
 
-	"github.com/firoyang/github-action-toolset/internal/analyzer"
-	"github.com/firoyang/github-action-toolset/internal/config"
-	"github.com/firoyang/github-action-toolset/internal/github"
-	"github.com/firoyang/github-action-toolset/pkg/types"
+	"github.com/shichao402/GithubActionAISelfBuilder/core/tools/go/internal/analyzer"
+	"github.com/shichao402/GithubActionAISelfBuilder/core/tools/go/internal/config"
+	"github.com/shichao402/GithubActionAISelfBuilder/core/tools/go/internal/github"
+	"github.com/shichao402/GithubActionAISelfBuilder/core/tools/go/pkg/types"
 )
 
 // Debugger 调试器

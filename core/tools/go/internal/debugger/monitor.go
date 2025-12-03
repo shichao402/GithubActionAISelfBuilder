@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/firoyang/github-action-toolset/internal/config"
-	"github.com/firoyang/github-action-toolset/internal/github"
-	"github.com/firoyang/github-action-toolset/pkg/types"
+	"github.com/shichao402/GithubActionAISelfBuilder/core/tools/go/internal/config"
+	"github.com/shichao402/GithubActionAISelfBuilder/core/tools/go/internal/github"
+	"github.com/shichao402/GithubActionAISelfBuilder/core/tools/go/pkg/types"
 )
 
 // Monitor 状态监控器
@@ -148,5 +148,3 @@ func formatDuration(d time.Duration) string {
 	}
 	return fmt.Sprintf("%ds", seconds)
 }
-
-

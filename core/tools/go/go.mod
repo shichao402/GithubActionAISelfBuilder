@@ -1,4 +1,4 @@
-module github.com/firoyang/github-action-toolset
+module github.com/shichao402/GithubActionAISelfBuilder/core/tools/go
 
 go 1.21
 

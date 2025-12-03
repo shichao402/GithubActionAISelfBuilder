@@ -126,7 +126,7 @@ git push
 ```bash
 # 1. 添加 Submodule
 cd /path/to/your/project
-git submodule add https://github.com/firoyang/github-action-toolset .toolsets/github-actions
+git submodule add https://github.com/shichao402/GithubActionAISelfBuilder.git .toolsets/github-actions
 
 # 2. 手动安装工具集（参考 docs/INSTALL.md）
 
