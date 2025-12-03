@@ -112,6 +112,7 @@ jobs:
       - name: Build Flutter app
         if: steps.check_flutter.outputs.is_flutter == 'true'
         working-directory: dev/test-project/flutter-demo
+        shell: bash
         run: |
           flutter build ${{ matrix.platform }} --${{ matrix.build-mode }}
         env:
