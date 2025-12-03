@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
 	"os/exec"
 	"strings"
 	"time"
@@ -264,8 +265,8 @@ func (c *client) callGHAPI(endpoint string) (string, error) {
 func (c *client) executeGHCommand(args ...string) error {
 	cmd := exec.CommandContext(c.ctx, "gh", args...)
 
-	// 设置环境变量
-	cmd.Env = append(cmd.Env, fmt.Sprintf("GITHUB_TOKEN=%s", c.config.GitHub.Token))
+	// 设置环境变量（继承当前环境并添加 GITHUB_TOKEN）
+	cmd.Env = append(os.Environ(), fmt.Sprintf("GITHUB_TOKEN=%s", c.config.GitHub.Token))
 
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("gh command failed: %w", err)
@@ -279,8 +280,8 @@ func (c *client) executeGHCommand(args ...string) error {
 func (c *client) executeGHCommandWithOutput(args ...string) (string, error) {
 	cmd := exec.CommandContext(c.ctx, "gh", args...)
 
-	// 设置环境变量
-	cmd.Env = append(cmd.Env, fmt.Sprintf("GITHUB_TOKEN=%s", c.config.GitHub.Token))
+	// 设置环境变量（继承当前环境并添加 GITHUB_TOKEN）
+	cmd.Env = append(os.Environ(), fmt.Sprintf("GITHUB_TOKEN=%s", c.config.GitHub.Token))
 
 	output, err := cmd.Output()
 	if err != nil {
