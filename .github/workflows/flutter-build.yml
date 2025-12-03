@@ -107,6 +107,11 @@ jobs:
         if: steps.check_flutter.outputs.is_flutter == 'true'
         run: |
           flutter build ${{ matrix.platform }} --${{ matrix.build-mode }}
+        env:
+          # Android 签名配置（如果需要）
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
       
       - name: Verify build script (if not Flutter project)
         if: steps.check_flutter.outputs.is_flutter == 'false'
@@ -116,11 +121,6 @@ jobs:
           bash -n scripts/flutter-build.sh && echo "✅ 脚本语法正确" || exit 1
           bash scripts/flutter-build.sh --help
           echo "✅ Flutter 构建工具验证通过（非 Flutter 项目环境）"
-        env:
-          # Android 签名配置（如果需要）
-          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
 
       - name: Upload build artifacts
         if: steps.check_flutter.outputs.is_flutter == 'true'
