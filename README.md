@@ -1,288 +1,277 @@
-# GitHub Action Toolset
+# GitHub Action AI 工具集
 
-> 一套完整的 GitHub Actions AI 规则工具集，让 AI 助手自动遵循最佳实践
+> 一套 GitHub Actions 规则 + 工具集合，让 AI 自动遵循最佳实践
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/firoyang/github-action-toolset)
 
-## 🎯 项目定位
+## 🎯 这是什么
 
-**这不是一个框架，而是一套规则 + 工具的集合。**
+**这不是框架，是规则 + 工具的集合。**
 
-当你厌倦了重复教 AI 如何构建和调试 GitHub Actions 时，这个工具集可以帮你：
-- ✅ 让 AI 自动遵循 GitHub Actions 最佳实践
+当你厌倦了重复教 AI 如何构建和调试 GitHub Actions 时：
+- ✅ AI 自动遵循 GitHub Actions 最佳实践
 - ✅ 提供开箱即用的 Workflow 模板
-- ✅ 一键调试和修复失败的工作流
-- ✅ 保持本地构建和 CI 的一致性
+- ✅ 一键调试失败的工作流
+- ✅ 本地构建和 CI 保持一致
 
 ## ✨ 核心特性
 
-### 1. AI 规则文件 📋
+### 1. AI 规则文件 (`.mdc`)
 
-教会 AI 助手如何正确处理 GitHub Actions：
+三个规则文件教会 AI 如何处理 GitHub Actions：
 
-- **github-actions.mdc** - GitHub Actions 基础规则和最佳实践
-- **debugging.mdc** - 工作流调试标准流程
-- **best-practices.mdc** - 性能优化和安全实践
+- `github-actions.mdc` - 基础规则和最佳实践
+- `debugging.mdc` - 工作流调试标准流程
+- `best-practices.mdc` - 性能优化和安全实践
 
-**效果**：安装后，AI 会自动使用正确的方式处理 GitHub Actions，无需重复提醒。
+**效果**：安装后，AI 会自动正确处理 GitHub Actions，无需重复提醒。
 
-### 2. 调试工具 🔧
+### 2. 调试工具 (`gh-action-debug`)
 
-#### Go 工具（主力，强烈推荐）
+Go 编写的 GitHub Actions 调试工具：
 
-**gh-action-debug** - 用 Go 编写的 GitHub Actions 调试工具：
+- **单一可执行文件** - 无需依赖，跨平台
+- **一个命令完成所有** - 触发 + 监控 + 日志 + 分析 + 建议
+- **JSON 输出** - AI 友好
+- **智能错误分析** - 12+ 种常见错误模式
+- **性能优异** - 比 Python 快 10-100x
 
-- **单一可执行文件** - 无需依赖，跨平台运行
-- **一个命令完成所有步骤** - 触发 + 监控 + 日志收集 + 错误分析 + 建议
-- **标准 JSON 输出** - AI 友好，易于解析
-- **智能错误分析** - 12+ 种常见错误模式，自动生成修复建议
-- **性能优异** - 启动快 10-100x（相比 Python）
+**效果**：AI 只需一个命令，立即得到结构化的错误和修复建议。
 
-**效果**：AI 只需运行一个命令，立即得到结构化的错误和修复建议。
-
-
-### 3. Workflow 模板库 📦
+### 3. Workflow 模板库
 
 常用的 GitHub Actions 工作流模板：
 
-- **构建模板** - Node.js, Python, Flutter 等
-- **测试模板** - pytest, jest 等
-- **发布模板** - GitHub Release, npm 发布
-- **部署模板** - Docker, AWS, Azure 等
+- **构建** - Node.js, Python, Flutter
+- **测试** - pytest
+- **发布** - GitHub Release, npm
+- **部署** - Docker
 
-**效果**：复制模板，简单修改，立即可用。
+### 4. 本地构建脚本
+
+与 CI 保持一致的本地构建脚本：
+
+- `flutter-build.sh` - Flutter 多平台构建
 
 ## 🚀 快速开始
 
 ### 安装
 
-**一键安装**（推荐）：
-
 ```bash
-curl -sL https://raw.githubusercontent.com/firoyang/github-action-toolset/main/core/scripts/install.sh | bash
-```
-
-**或使用 Git Submodule**：
-
-```bash
+# 克隆工具集到你的项目
 git submodule add https://github.com/firoyang/github-action-toolset .toolsets/github-actions
+
+# 安装（会复制规则、模板，构建 Go 工具）
 bash .toolsets/github-actions/core/scripts/install.sh
 ```
 
+安装后你会得到：
+- ✅ AI 规则文件 → `core/rules/*.mdc`
+- ✅ Go 调试工具 → `scripts/toolsets/github-actions/gh-action-debug`
+- ✅ Workflow 模板 → `core/templates/`
+
 ### 使用
 
-**1. 创建工作流（从模板）**：
+#### 1. 创建工作流
 
 ```bash
-# 复制 Node.js 构建模板
-cp .github/templates/build/nodejs-build.yml .github/workflows/build.yml
+# 复制模板
+cp core/templates/build/flutter-build.yml .github/workflows/build.yml
 
 # 根据需求自定义
 vim .github/workflows/build.yml
 ```
 
-**2. 调试工作流（推荐使用 Go 工具）**：
+#### 2. 推送并调试
 
 ```bash
-# 使用 gh-action-debug（Go 工具，推荐）
-gh-action-debug workflow debug .github/workflows/build.yml main
-
-# JSON 输出（给 AI 使用）
-gh-action-debug workflow debug .github/workflows/build.yml main --output json
-
-# 带参数触发
-gh-action-debug workflow debug .github/workflows/release.yml main --input version=1.0.0
-```
-
-**3. 让 AI 帮你**：
-
-现在你可以简单地告诉 AI：
-
-```
-"帮我创建一个 Node.js 构建工作流"
-"调试失败的 build.yml 工作流"
-"优化构建速度"
-```
-
-AI 会自动：
-- ✅ 使用合适的模板
-- ✅ 遵循最佳实践
-- ✅ 使用调试工具
-- ✅ 提供修复建议
-
-## 📦 安装内容
-
-安装后，你的项目会包含：
-
-```
-你的项目/
-├── .cursor/
-│   └── rules/
-│       └── github-actions/         # AI 规则文件
-│           ├── github-actions.mdc
-│           ├── debugging.mdc
-│           └── best-practices.mdc
-├── scripts/
-│   └── toolsets/
-│       └── github-actions/         # 工具脚本
-│           ├── ai_debug_workflow.py
-│           ├── test_pipelines.py
-│           └── run_pipeline.py
-└── .github/
-    └── templates/                  # Workflow 模板
-        ├── build/
-        ├── test/
-        ├── release/
-        └── deployment/
-```
-
-## 🎯 使用场景
-
-### 场景 1：创建新的构建工作流
-
-```bash
-# 1. 复制模板
-cp .github/templates/build/nodejs-build.yml .github/workflows/build.yml
-
-# 2. 推送代码
+# 推送代码
 git add .github/workflows/build.yml
 git commit -m "Add build workflow"
 git push
 
-# 3. 测试工作流
-npm run ai-debug -- .github/workflows/build.yml main
+# 自动调试（推荐 JSON 输出）
+gh-action-debug workflow debug .github/workflows/build.yml main --output json
+
+# 带参数触发
+gh-action-debug workflow debug .github/workflows/build.yml main \
+  --input platform=android \
+  --output json
 ```
 
-### 场景 2：调试失败的工作流
+#### 3. 让 AI 帮你
 
-```bash
-# 1. 使用调试脚本
-npm run ai-debug -- .github/workflows/build.yml main
+安装后，直接告诉 AI：
 
-# 2. 查看详细日志和错误分析（自动）
-
-# 3. 根据建议修复代码
-
-# 4. 推送并重新测试
-git add .
-git commit -m "Fix workflow issues"
-git push
-npm run ai-debug -- .github/workflows/build.yml main
+```
+"帮我创建一个 Flutter 构建工作流"
+"调试失败的 build.yml"
+"优化构建速度"
 ```
 
-### 场景 3：批量测试多个工作流
+AI 会自动：
+1. 使用模板
+2. 遵循最佳实践
+3. 使用 gh-action-debug 调试
+4. 提供修复建议
+
+## 📁 项目结构
+
+```
+.
+├── core/                      # 核心可复用资源
+│   ├── rules/                 # AI 规则文件 (*.mdc)
+│   │   ├── github-actions.mdc
+│   │   ├── debugging.mdc
+│   │   └── best-practices.mdc
+│   ├── templates/             # Workflow 模板
+│   │   ├── build/
+│   │   ├── test/
+│   │   ├── release/
+│   │   └── deployment/
+│   ├── scripts/               # 安装脚本
+│   │   └── install.sh
+│   └── tools/                 # 工具源码
+│       └── go/                # gh-action-debug 源码
+├── scripts/                   # 本地构建脚本
+│   └── flutter-build.sh
+├── docs/                      # 文档
+│   ├── INSTALL.md
+│   ├── USAGE.md
+│   └── guides/
+└── README.md
+```
+
+## 🔧 工具命令
+
+### gh-action-debug
 
 ```bash
-# 测试所有工作流
-npm run test-pipeline -- --all --trigger --watch
+# 完整调试（触发 + 监控 + 分析 + 建议）
+gh-action-debug workflow debug <workflow-file> <ref> --output json
 
-# 测试指定工作流
-npm run test-pipeline -- --workflow build.yml --trigger
+# 列出所有工作流
+gh-action-debug workflow list
+
+# 手动触发
+gh-action-debug workflow trigger <workflow-file> <ref>
+
+# 带输入参数
+gh-action-debug workflow debug <workflow-file> <ref> \
+  --input key=value \
+  --output json
+
+# 查看版本
+gh-action-debug version
+```
+
+### 本地构建
+
+```bash
+# Flutter 构建
+bash scripts/flutter-build.sh --platform android --mode release
+
+# 查看帮助
+bash scripts/flutter-build.sh --help
 ```
 
 ## 📚 文档
 
-- [安装指南](docs/INSTALL.md) - 详细的安装说明
-- [使用指南](docs/USAGE.md) - 完整的使用说明
-- [快速开始](docs/guides/quickstart.md) - 5分钟快速上手
-- [示例](docs/examples/) - 实际项目示例
+- [安装指南](docs/INSTALL.md) - 详细安装说明
+- [使用指南](docs/USAGE.md) - 完整使用文档
+- [快速开始](docs/guides/quickstart.md) - 5 分钟上手
+- [AI 自我调试](docs/guides/ai-self-debug.md) - AI 调试流程
+- [Go 工具文档](core/tools/go/README.md) - gh-action-debug 详细说明
 
-## 🔄 工作原理
+## 💡 AI 集成示例
 
-### 传统方式（繁琐）：
+安装后，AI 会自动遵循规则：
 
+**你说**：
 ```
-1. 你：帮我创建一个 Node.js 构建工作流
-2. AI：创建了一个基础的 YAML 文件
-3. 你：不对，需要添加缓存
-4. AI：好的，添加了缓存
-5. 你：测试失败了，帮我调试
-6. AI：请运行 gh workflow run ...
-7. 你：不对，应该先推送代码
-8. AI：好的，先推送...
-9. AI：请等待... 手动查看日志... 手动分析...
-（重复很多次，非常繁琐）
+"帮我创建一个 Flutter 构建工作流，支持 Android 和 iOS"
 ```
 
-### 使用工具集（简单）：
+**AI 会**：
+1. ✅ 复制 `core/templates/build/flutter-build.yml`
+2. ✅ 自定义配置（平台、版本等）
+3. ✅ 推送代码到远程
+4. ✅ 运行 `gh-action-debug workflow debug ...`
+5. ✅ 分析结果，如有错误则修复
+6. ✅ 重新测试直到通过
 
-```
-1. 你：帮我创建一个 Node.js 构建工作流
-2. AI：好的（自动从模板复制，已包含缓存、最佳实践）
-3. AI：已推送代码，使用 gh-action-debug 工具测试...
-4. AI：一个命令完成：触发 → 监控 → 日志收集 → 错误分析 → 建议
-5. AI：发现问题：缺少 express 依赖
-6. AI：应用建议：添加到 package.json
-7. AI：推送修复，重新验证
-8. AI：✅ 测试通过！
-```
+**AI 不会**：
+- ❌ 从头编写工作流
+- ❌ 手动运行 `gh workflow run`
+- ❌ 不推送代码就测试
+- ❌ 猜测错误而不查看日志
 
-**关键优势**：
-- AI 不再需要手动组合 5-10 个命令
-- 一个命令得到结构化的错误和建议
-- 自动化程度极高，几乎无需人工干预
+## 🛠 开发与贡献
 
-## 🤝 为什么不用框架？
+### 构建 Go 工具
 
-我们尝试过构建复杂的框架（基类、抽象层、脚手架），但发现：
+```bash
+cd core/tools/go
 
-- ❌ 学习成本高 - 需要学习框架 API
-- ❌ AI 也要学 - AI 需要理解你的框架
-- ❌ 灵活性差 - 被框架限制
-- ❌ 维护复杂 - 两套代码（框架 + 生成的代码）
+# 构建当前平台
+make build
 
-**规则 + 工具 + 模板**的方式：
+# 构建所有平台
+make build-all
 
-- ✅ 零学习成本 - 直接用 YAML
-- ✅ AI 友好 - 规则让 AI 知道怎么做
-- ✅ 完全灵活 - 随意修改 YAML
-- ✅ 易于维护 - 只有一套 YAML 文件
+# 运行测试
+make test
 
-## 🛠️ 依赖要求
-
-### 必需
-
-- **Git** - 版本控制
-- **GitHub CLI (gh)** - 触发和监控工作流
-  - 安装：https://cli.github.com/
-  - 登录：`gh auth login`
-
-### 可选
-
-- **Python 3.8+** - 运行工具脚本（推荐）
-- **Node.js** - npm scripts 支持（如果项目使用）
-
-## 📝 开发
-
-### 项目结构
-
-```
-github-action-toolset/
-├── toolset.json           # 工具集自描述文件
-├── core/                  # 核心可复用内容
-│   ├── rules/            # AI 规则文件
-│   ├── scripts/          # 工具脚本
-│   └── templates/        # Workflow 模板
-├── dev/                   # 开发测试目录（不复用）
-├── docs/                  # 文档
-└── README.md             # 项目说明
+# 安装到 GOPATH
+make install
 ```
 
-### 贡献
+### 添加新模板
 
-欢迎贡献！你可以：
+```bash
+# 1. 在 core/templates/ 下创建模板
+vim core/templates/build/my-template.yml
 
-1. 添加新的模板
-2. 改进 AI 规则
-3. 增强工具脚本
-4. 完善文档
+# 2. 更新 core/templates/README.md
+vim core/templates/README.md
 
-步骤：
-1. Fork 项目
-2. 创建特性分支
-3. 提交更改
-4. 创建 Pull Request
+# 3. 测试模板
+cp core/templates/build/my-template.yml .github/workflows/test.yml
+gh-action-debug workflow debug .github/workflows/test.yml main --output json
+```
+
+### 添加新规则
+
+```bash
+# 1. 在 core/rules/ 下创建规则文件
+vim core/rules/my-rule.mdc
+
+# 2. 更新 core/rules/README.md
+vim core/rules/README.md
+```
+
+## 🌟 最佳实践
+
+1. **从模板开始** - 不要从头编写工作流
+2. **本地先测** - 本地构建通过后再推送
+3. **使用工具** - 用 gh-action-debug 而不是手动命令
+4. **增量优化** - 先跑通，再优化
+
+## 📊 工具对比
+
+| 特性 | gh-action-debug (Go) | 手动 gh CLI |
+|------|---------------------|-------------|
+| 一键完成 | ✅ | ❌ |
+| JSON 输出 | ✅ | ❌ |
+| 错误分析 | ✅ 12+ 模式 | ❌ |
+| 修复建议 | ✅ | ❌ |
+| AI 友好 | ✅ | ❌ |
+| 性能 | ✅ 快 | ⚠️ 慢 |
+
+## 📝 更新日志
+
+详见 [CHANGELOG.md](CHANGELOG.md)
 
 ## 📄 许可证
 
@@ -290,16 +279,17 @@ MIT License - 详见 [LICENSE](LICENSE)
 
 ## 🙏 致谢
 
-感谢所有使用和贡献此项目的开发者。
+- [GitHub Actions](https://github.com/features/actions)
+- [GitHub CLI](https://cli.github.com/)
+- [Cobra](https://github.com/spf13/cobra) - Go CLI 框架
+- [Viper](https://github.com/spf13/viper) - Go 配置管理
 
 ## 🔗 相关链接
 
-- [GitHub Actions 官方文档](https://docs.github.com/en/actions)
+- [GitHub Actions 文档](https://docs.github.com/en/actions)
 - [GitHub CLI 文档](https://cli.github.com/manual/)
-- [项目讨论区](https://github.com/firoyang/github-action-toolset/discussions)
+- [Workflow 语法](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions)
 
 ---
 
-**记住**：这不是框架，而是让 AI 更好地帮你处理 GitHub Actions 的工具集。
-
-如果你厌倦了重复教 AI 同样的事情，试试这个工具集吧！ 🚀
+**享受 AI 自动化调试的便利！** 🎉
