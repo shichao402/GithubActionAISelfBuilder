@@ -38,19 +38,12 @@
         "required": true,
         "install_url": "https://cli.github.com/",
         "description": "GitHub CLI - 用于调试和触发工作流"
-      },
-      {
-        "name": "node",
-        "version": ">=16.0.0",
-        "required": false,
-        "install_url": "https://nodejs.org/",
-        "description": "Node.js - 用于 JavaScript/TypeScript 项目（可选）"
       }
     ],
     "environment": {
       "GITHUB_TOKEN": {
-        "required": true,
-        "description": "GitHub Personal Access Token，用于 API 访问"
+        "required": false,
+        "description": "GitHub Personal Access Token（可选，工具会自动从 gh CLI 获取）"
       }
     }
   },
@@ -68,7 +61,7 @@
         "source": "core/tools/go/dist/",
         "files": ["gh-action-debug-*"],
         "executable": true,
-        "description": "Go 调试工具（自动检测平台）"
+        "description": "Go 调试工具（自动检测平台并复制对应二进制文件）"
       },
       ".github/templates/": {
         "source": "core/templates/",
@@ -79,10 +72,6 @@
     "npm_scripts": {
       "ai-debug": "./scripts/toolsets/github-actions/gh-action-debug workflow debug",
       "workflow-list": "./scripts/toolsets/github-actions/gh-action-debug workflow list"
-    },
-    "hooks": {
-      "pre_install": "core/scripts/hooks/pre-install.sh",
-      "post_install": "core/scripts/hooks/post-install.sh"
     }
   },
   
@@ -97,51 +86,41 @@
     {
       "id": "debug-tools",
       "name": "Go 自动化调试工具",
-      "description": "一键触发、监控和调试 GitHub Actions 工作流（Go 实现，高性能）",
+      "description": "一键触发、监控和调试 GitHub Actions 工作流（Go 实现，高性能，跨平台）",
       "files": ["core/tools/go/cmd/gh-action-debug/main.go"],
       "essential": true
     },
     {
       "id": "templates",
       "name": "Workflow 模板库",
-      "description": "常用的 GitHub Actions 工作流模板",
+      "description": "常用的 GitHub Actions 工作流模板（构建、测试、发布、部署）",
       "files": ["core/templates/**/*.yml"],
       "essential": true
-    },
-    {
-      "id": "best-practices",
-      "name": "最佳实践文档",
-      "description": "GitHub Actions 和 CI/CD 最佳实践",
-      "files": ["docs/best-practices/**/*.md"],
-      "essential": false
     }
   ],
   
   "scripts": {
     "install": "bash core/scripts/install.sh",
-    "uninstall": "bash core/scripts/uninstall.sh",
-    "update": "bash core/scripts/update.sh",
     "validate": "bash core/tools/go/test-verify.sh"
   },
   
   "documentation": {
-    "quickstart": "docs/USAGE.md",
+    "quickstart": "docs/guides/quickstart.md",
     "installation": "docs/INSTALL.md",
-    "api": "docs/API.md",
-    "examples": "docs/examples/",
+    "usage": "docs/USAGE.md",
+    "scripts": "docs/SCRIPTS.md",
     "changelog": "CHANGELOG.md"
   },
   
   "repository": {
     "type": "git",
-    "url": "https://github.com/firoyang/github-action-toolset"
+    "url": "https://github.com/shichao402/GithubActionAISelfBuilder.git"
   },
   
   "metadata": {
     "created": "2025-12-02",
-    "updated": "2025-12-02",
+    "updated": "2025-12-03",
     "toolset_version": "1.0.0",
     "schema_version": "1.0.0"
   }
 }
-
