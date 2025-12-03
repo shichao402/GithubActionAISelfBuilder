@@ -69,9 +69,11 @@ jobs:
       - name: Check for Flutter project
         id: check_flutter
         shell: bash
+        working-directory: dev/test-project/flutter-demo
         run: |
           if [ -f "pubspec.yaml" ]; then
             echo "is_flutter=true" >> $GITHUB_OUTPUT
+            echo "✅ Found Flutter project"
           else
             echo "is_flutter=false" >> $GITHUB_OUTPUT
             echo "⚠️  Not a Flutter project, skipping build"
@@ -87,24 +89,29 @@ jobs:
 
       - name: Verify Flutter installation
         if: steps.check_flutter.outputs.is_flutter == 'true'
+        working-directory: dev/test-project/flutter-demo
         run: flutter --version
 
       - name: Get Flutter dependencies
         if: steps.check_flutter.outputs.is_flutter == 'true'
+        working-directory: dev/test-project/flutter-demo
         run: flutter pub get
 
       - name: Analyze code
         if: steps.check_flutter.outputs.is_flutter == 'true'
+        working-directory: dev/test-project/flutter-demo
         continue-on-error: true
         run: flutter analyze
 
       - name: Run tests
         if: steps.check_flutter.outputs.is_flutter == 'true'
+        working-directory: dev/test-project/flutter-demo
         continue-on-error: true
         run: flutter test
 
       - name: Build Flutter app
         if: steps.check_flutter.outputs.is_flutter == 'true'
+        working-directory: dev/test-project/flutter-demo
         run: |
           flutter build ${{ matrix.platform }} --${{ matrix.build-mode }}
         env:
@@ -128,13 +135,13 @@ jobs:
         with:
           name: ${{ matrix.platform }}-${{ matrix.build-mode }}
           path: |
-            build/app/outputs/flutter-apk/*.apk
-            build/app/outputs/bundle/**/*.aab
-            build/web/**
-            build/windows/runner/Release/**
-            build/linux/**
-            build/macos/Build/Products/Release/**
-            build/ios/ipa/**
+            dev/test-project/flutter-demo/build/app/outputs/flutter-apk/*.apk
+            dev/test-project/flutter-demo/build/app/outputs/bundle/**/*.aab
+            dev/test-project/flutter-demo/build/web/**
+            dev/test-project/flutter-demo/build/windows/runner/Release/**
+            dev/test-project/flutter-demo/build/linux/**
+            dev/test-project/flutter-demo/build/macos/Build/Products/Release/**
+            dev/test-project/flutter-demo/build/ios/ipa/**
           retention-days: 7
           if-no-files-found: warn
 
