@@ -56,35 +56,53 @@ Go 编写的 GitHub Actions 调试工具：
 
 ## 🚀 快速开始
 
-### 安装
+### 方式一：通过 CursorToolset 安装（推荐）
+
+如果你使用 [CursorToolset](https://github.com/firoyang/CursorToolset) 包管理器：
 
 ```bash
-# 克隆工具集到你的项目
-git submodule add https://github.com/shichao402/GithubActionAISelfBuilder.git .toolsets/github-actions
+# 一键安装工具集
+cursortoolset install github-action-toolset
 
-# 手动安装：复制规则文件和工具
-# 1. 复制规则文件
-mkdir -p .cursor/rules/github-actions
-cp .toolsets/github-actions/core/rules/*.mdc .cursor/rules/github-actions/
-
-# 2. 复制 Go 工具（自动检测平台）
-mkdir -p scripts/toolsets/github-actions
-# 检测平台并复制对应的二进制文件
-PLATFORM=$(uname -s | tr '[:upper:]' '[:lower:]')
-ARCH=$(uname -m)
-if [ "$ARCH" = "x86_64" ]; then
-    ARCH="amd64"
-elif [ "$ARCH" = "arm64" ] || [ "$ARCH" = "aarch64" ]; then
-    ARCH="arm64"
-fi
-cp .toolsets/github-actions/core/tools/go/dist/gh-action-debug-${PLATFORM}-${ARCH} \
-   scripts/toolsets/github-actions/gh-action-debug
-chmod +x scripts/toolsets/github-actions/gh-action-debug
+# 工具集会自动：
+# ✅ 克隆到 ~/.cursortoolsets/repos/github-action-toolset/
+# ✅ 自动构建 Go 工具（5 个平台）
+# ✅ 安装 AI 规则到 .cursor/rules/github-actions/
+# ✅ 安装调试工具到 scripts/toolsets/github-actions/
 ```
 
 安装后你会得到：
-- ✅ AI 规则文件 → `.cursor/rules/github-actions/*.mdc`
-- ✅ Go 调试工具 → `scripts/toolsets/github-actions/gh-action-debug`
+- ✅ AI 规则文件自动生效
+- ✅ Go 工具自动构建并安装
+- ✅ 开箱即用，无需手动配置
+
+### 方式二：手动安装
+
+如果不使用 CursorToolset：
+
+```bash
+# 1. 克隆仓库
+git clone https://github.com/shichao402/GithubActionAISelfBuilder.git
+
+# 2. 运行安装脚本（需要 Go 环境）
+cd GithubActionAISelfBuilder
+bash install.sh
+
+# 3. 手动复制文件到你的项目
+# 复制规则文件
+mkdir -p your-project/.cursor/rules/github-actions
+cp core/rules/*.mdc your-project/.cursor/rules/github-actions/
+
+# 复制 Go 工具（自动检测平台）
+mkdir -p your-project/scripts/toolsets/github-actions
+PLATFORM=$(uname -s | tr '[:upper:]' '[:lower:]')
+ARCH=$(uname -m)
+[ "$ARCH" = "x86_64" ] && ARCH="amd64"
+[ "$ARCH" = "aarch64" ] && ARCH="arm64"
+cp core/tools/go/dist/gh-action-debug-${PLATFORM}-${ARCH} \
+   your-project/scripts/toolsets/github-actions/gh-action-debug
+chmod +x your-project/scripts/toolsets/github-actions/gh-action-debug
+```
 
 ### 使用
 

@@ -82,7 +82,7 @@
   ],
   
   "scripts": {
-    "install": "bash core/scripts/install.sh",
+    "install": "bash install.sh",
     "validate": "bash core/tools/go/test-verify.sh"
   },
   
