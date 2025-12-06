@@ -17,9 +17,9 @@
   "description": "帮助 AI 助手完成 GitHub Actions CI/CD 任务",
   "displayName": "GitHub Action AI 工具集",
   "dist": {
-    "sha256": "b060e2924b8fe00fba455041c0793d9ce096dd113abc5cbc1f231e3d854598c7",
+    "sha256": "32010b066cd1955023a3e69665a4a2e7ddc9255aab07037b76b554203b4d8e56",
     "size": 30461952,
-    "tarball": "https://github.com/shichao402/GithubActionAISelfBuilder/releases/download/v1.0.7/github-action-toolset-1.0.7.tar.gz"
+    "tarball": "https://github.com/shichao402/GithubActionAISelfBuilder/releases/download/v1.0.8/github-action-toolset-1.0.8.tar.gz"
   },
   "keywords": [
     "github",
@@ -35,5 +35,5 @@
     "type": "git",
     "url": "https://github.com/shichao402/GithubActionAISelfBuilder.git"
   },
-  "version": "1.0.7"
+  "version": "1.0.8"
 }
