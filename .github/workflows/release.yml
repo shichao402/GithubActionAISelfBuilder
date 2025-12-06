@@ -68,13 +68,13 @@ jobs:
           SHA256=$(sha256sum /tmp/release/$TARBALL | cut -d' ' -f1)
           SIZE=$(stat -c%s /tmp/release/$TARBALL)
           
-          # 从 toolset.json 生成 package.json，使用相对路径 tarball
+          # 从 package.json 生成发布用的 package.json，使用相对路径 tarball
           jq --arg tarball "$TARBALL" \
              --arg sha256 "$SHA256" \
              --arg size "$SIZE" \
              --arg version "$VERSION" \
              '.version = $version | .dist.tarball = $tarball | .dist.sha256 = $sha256 | .dist.size = ($size | tonumber)' \
-             toolset.json > /tmp/release/package.json
+             package.json > /tmp/release/package.json
           
           echo "=== package.json ==="
           cat /tmp/release/package.json
