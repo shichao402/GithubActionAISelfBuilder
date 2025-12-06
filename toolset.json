@@ -14,8 +14,8 @@
 
   "dist": {
     "tarball": "https://github.com/shichao402/GithubActionAISelfBuilder/releases/download/v1.0.4/github-action-toolset-1.0.4.tar.gz",
-    "sha256": "",
-    "size": 0
+    "sha256": "745681db9ea9b54cf39898e51b49a8140327037c2b3d6aae759b7e0ca647f78c",
+    "size": 25497395
   },
 
   "bin": {
