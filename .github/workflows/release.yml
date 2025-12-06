@@ -21,7 +21,9 @@ jobs:
         run: |
           PKG_NAME="github-action-toolset"
           VERSION="${{ steps.version.outputs.VERSION }}"
-          tar -czvf "${PKG_NAME}-${VERSION}.tar.gz" \
+          # 创建临时目录打包，避免 "file changed as we read it" 错误
+          mkdir -p /tmp/release
+          tar -czvf "/tmp/release/${PKG_NAME}-${VERSION}.tar.gz" \
             --exclude='.git' \
             --exclude='.github' \
             --exclude='*.tar.gz' \
@@ -29,7 +31,9 @@ jobs:
             --exclude='core/tools' \
             --exclude='.vscode' \
             --exclude='.DS_Store' \
+            --exclude='coverage' \
             .
+          mv "/tmp/release/${PKG_NAME}-${VERSION}.tar.gz" .
 
       - name: Calculate SHA256
         id: sha256
