@@ -108,6 +108,32 @@ gh-action-debug workflow list
 - `test` - 批量测试工作流
 - `list` - 列出所有工作流
 
+### rules 子命令
+
+- `export` - 导出 AI 规则文件到指定项目
+- `list` - 列出可用的规则文件
+
+#### 导出规则到项目
+
+```bash
+# 导出到当前目录
+gh-action-debug rules export
+
+# 导出到指定项目
+gh-action-debug rules export /path/to/project
+
+# 强制覆盖已存在的文件
+gh-action-debug rules export --force
+
+# 预览模式（不实际写入）
+gh-action-debug rules export --dry-run
+
+# 列出可用的规则文件
+gh-action-debug rules list
+```
+
+导出后，规则文件会被复制到项目的 `.cursor/rules/github-actions/` 目录，Cursor IDE 会自动加载这些规则。
+
 ## 📊 输出格式
 
 ### JSON 输出示例

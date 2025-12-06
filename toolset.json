@@ -18,6 +18,10 @@
     "size": 37446
   },
 
+  "bin": {
+    "gh-action-debug": "core/tools/go/dist/gh-action-debug"
+  },
+
   "cursortoolset": {
     "minVersion": "1.0.0"
   },

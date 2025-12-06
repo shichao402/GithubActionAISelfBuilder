@@ -65,9 +65,17 @@ func init() {
 	// 添加子命令
 	rootCmd.AddCommand(workflowCmd)
 	rootCmd.AddCommand(versionCmd)
+	rootCmd.AddCommand(rulesCmd)
 	
 	// 添加 PersistentPreRun 来初始化配置和客户端
 	rootCmd.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
+		// rules 命令不需要 GitHub 客户端
+		if cmd.Parent() != nil && cmd.Parent().Use == "rules" {
+			return nil
+		}
+		if cmd.Use == "rules" {
+			return nil
+		}
 		return initializeClient()
 	}
 }
