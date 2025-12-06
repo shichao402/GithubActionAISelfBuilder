@@ -1,30 +1,39 @@
 {
-  "name": "github-action-toolset",
-  "displayName": "GitHub Action AI 工具集",
-  "version": "1.0.4",
-  "description": "帮助 AI 助手完成 GitHub Actions CI/CD 任务",
   "author": "shichao402",
+  "bin": {
+    "gh-action-debug": {
+      "darwin-amd64": "core/tools/go/dist/gh-action-debug-darwin-amd64",
+      "darwin-arm64": "core/tools/go/dist/gh-action-debug-darwin-arm64",
+      "linux-amd64": "core/tools/go/dist/gh-action-debug-linux-amd64",
+      "linux-arm64": "core/tools/go/dist/gh-action-debug-linux-arm64",
+      "windows-amd64": "core/tools/go/dist/gh-action-debug-windows-amd64.exe",
+      "windows-arm64": "core/tools/go/dist/gh-action-debug-windows-arm64.exe"
+    }
+  },
+  "cursortoolset": {
+    "minVersion": "1.0.0"
+  },
+  "dependencies": [],
+  "description": "帮助 AI 助手完成 GitHub Actions CI/CD 任务",
+  "displayName": "GitHub Action AI 工具集",
+  "dist": {
+    "sha256": "745681db9ea9b54cf39898e51b49a8140327037c2b3d6aae759b7e0ca647f78c",
+    "size": 25497395,
+    "tarball": "https://github.com/shichao402/GithubActionAISelfBuilder/releases/download/v1.0.4/github-action-toolset-1.0.4.tar.gz"
+  },
+  "keywords": [
+    "github",
+    "actions",
+    "ci",
+    "cd",
+    "workflow",
+    "ai-rules"
+  ],
   "license": "MIT",
-  "keywords": ["github", "actions", "ci", "cd", "workflow", "ai-rules"],
-
+  "name": "github-action-toolset",
   "repository": {
     "type": "git",
     "url": "https://github.com/shichao402/GithubActionAISelfBuilder.git"
   },
-
-  "dist": {
-    "tarball": "https://github.com/shichao402/GithubActionAISelfBuilder/releases/download/v1.0.4/github-action-toolset-1.0.4.tar.gz",
-    "sha256": "745681db9ea9b54cf39898e51b49a8140327037c2b3d6aae759b7e0ca647f78c",
-    "size": 25497395
-  },
-
-  "bin": {
-    "gh-action-debug": "core/tools/go/dist/gh-action-debug"
-  },
-
-  "cursortoolset": {
-    "minVersion": "1.0.0"
-  },
-
-  "dependencies": []
+  "version": "1.0.4"
 }
