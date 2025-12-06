@@ -59,37 +59,30 @@ jobs:
             --exclude='.DS_Store' \
             --exclude='coverage' \
             .
-          mv "/tmp/release/${PKG_NAME}-${VERSION}.tar.gz" .
 
-      - name: Calculate SHA256
-        id: sha256
+      - name: Generate package.json
         run: |
           PKG_NAME="github-action-toolset"
           VERSION="${{ steps.version.outputs.VERSION }}"
-          SHA256=$(shasum -a 256 "${PKG_NAME}-${VERSION}.tar.gz" | cut -d' ' -f1)
-          echo "SHA256=${SHA256}" >> $GITHUB_OUTPUT
-          echo "SHA256: ${SHA256}"
+          TARBALL="${PKG_NAME}-${VERSION}.tar.gz"
+          SHA256=$(sha256sum /tmp/release/$TARBALL | cut -d' ' -f1)
+          SIZE=$(stat -c%s /tmp/release/$TARBALL)
+          
+          # 从 toolset.json 生成 package.json，使用相对路径 tarball
+          jq --arg tarball "$TARBALL" \
+             --arg sha256 "$SHA256" \
+             --arg size "$SIZE" \
+             --arg version "$VERSION" \
+             '.version = $version | .dist.tarball = $tarball | .dist.sha256 = $sha256 | .dist.size = ($size | tonumber)' \
+             toolset.json > /tmp/release/package.json
+          
+          echo "=== package.json ==="
+          cat /tmp/release/package.json
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          files: "*.tar.gz"
-          body: |
-            ## GitHub Action AI 工具集 v${{ steps.version.outputs.VERSION }}
-            
-            ### 安装
-            ```bash
-            cursortoolset install github-action-toolset
-            ```
-            
-            ### SHA256
-            ```
-            ${{ steps.sha256.outputs.SHA256 }}
-            ```
-            
-            ### 包含内容
-            - AI 规则文件 (`rules/*.mdc`)
-              - `github-actions.mdc` - 基础规则和最佳实践
-              - `debugging.mdc` - 工作流调试标准流程
-              - `best-practices.mdc` - 性能优化和安全实践
-            - 使用文档 (`docs/`)
+          files: |
+            /tmp/release/package.json
+            /tmp/release/*.tar.gz
+          generate_release_notes: true
